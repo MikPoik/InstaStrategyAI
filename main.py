@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+from io import StringIO
+import logging
 from instagram_analyzer import analyze_instagram_profile
 from content_generator import generate_content_plan
 from strategy_recommender import get_strategy_recommendations
@@ -16,8 +18,19 @@ username = st.sidebar.text_input("Enter Instagram username")
 focus_area = st.sidebar.text_input("Enter your content focus area")
 
 if username and focus_area:
+    # Set up StringIO object to capture log messages
+    log_capture_string = StringIO()
+    ch = logging.StreamHandler(log_capture_string)
+    ch.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    logging.getLogger().addHandler(ch)
+
     with st.spinner("Analyzing profile..."):
         profile_data = analyze_instagram_profile(username)
+    
+    # Capture the log output
+    log_contents = log_capture_string.getvalue()
     
     if 'error' in profile_data:
         st.error(f"Error: {profile_data['error']}")
@@ -50,6 +63,10 @@ if username and focus_area:
         recommendations = get_strategy_recommendations(profile_data, focus_area)
         for i, rec in enumerate(recommendations, 1):
             st.write(f"{i}. {rec}")
+        
+        # Display logs in an expander
+        with st.expander("View Analysis Logs"):
+            st.text(log_contents)
     else:
         st.error("Unable to fetch profile data. Please check the username and try again.")
 else:
