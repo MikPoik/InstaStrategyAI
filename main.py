@@ -19,7 +19,9 @@ if username and focus_area:
     with st.spinner("Analyzing profile..."):
         profile_data = analyze_instagram_profile(username)
     
-    if profile_data:
+    if 'error' in profile_data:
+        st.error(f"Error: {profile_data['error']}")
+    elif profile_data:
         st.header("Profile Analysis")
         col1, col2, col3 = st.columns(3)
         col1.metric("Followers", profile_data['followers'])
