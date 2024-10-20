@@ -2,10 +2,15 @@ import streamlit as st
 import pandas as pd
 from io import StringIO
 import logging
+import os
 from instagram_analyzer import analyze_instagram_profile
 from content_generator import generate_content_plan
 from strategy_recommender import get_strategy_recommendations
 from data_visualizer import create_posting_schedule_chart, create_engagement_chart
+
+# Retrieve Instagram credentials from environment variables
+INSTAGRAM_USERNAME = os.environ.get('INSTAGRAM_USERNAME')
+INSTAGRAM_PASSWORD = os.environ.get('INSTAGRAM_PASSWORD')
 
 st.set_page_config(page_title="Instagram Marketing Manager AI", layout="wide")
 
@@ -17,10 +22,6 @@ st.sidebar.header("Input Instagram Profile")
 username = st.sidebar.text_input("Enter Instagram username to analyze")
 focus_area = st.sidebar.text_input("Enter your content focus area")
 
-st.sidebar.header("Instagram Login (Optional)")
-login_username = st.sidebar.text_input("Instagram Login Username")
-login_password = st.sidebar.text_input("Instagram Login Password", type="password")
-
 if username and focus_area:
     # Set up StringIO object to capture log messages
     log_capture_string = StringIO()
@@ -31,7 +32,7 @@ if username and focus_area:
     logging.getLogger().addHandler(ch)
 
     with st.spinner("Analyzing profile..."):
-        profile_data = analyze_instagram_profile(username, login_username, login_password)
+        profile_data = analyze_instagram_profile(username)
     
     # Capture the log output
     log_contents = log_capture_string.getvalue()
@@ -77,4 +78,4 @@ else:
     st.info("Please enter an Instagram username and content focus area to get started.")
 
 st.sidebar.markdown("---")
-st.sidebar.info("This app analyzes Instagram profiles and provides marketing recommendations. It does not store any personal data or require authentication. If provided, login credentials are used only for the current session and are not saved.")
+st.sidebar.info("This app analyzes Instagram profiles and provides marketing recommendations. It does not store any personal data or require authentication. Instagram login credentials are securely managed through environment variables.")

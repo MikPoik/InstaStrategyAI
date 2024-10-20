@@ -2,6 +2,7 @@ import instaloader
 import nltk
 import time
 import logging
+import os
 from collections import Counter
 from nltk.corpus import stopwords
 from typing import Dict, List
@@ -17,14 +18,18 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-def analyze_instagram_profile(username: str, login_username: str = None, login_password: str = None) -> Dict:
+# Retrieve Instagram credentials from environment variables
+INSTAGRAM_USERNAME = os.environ.get('INSTAGRAM_USERNAME')
+INSTAGRAM_PASSWORD = os.environ.get('INSTAGRAM_PASSWORD')
+
+def analyze_instagram_profile(username: str) -> Dict:
     L = instaloader.Instaloader()
     logger.info(f"Analyzing Instagram profile for username: {username}")
     
-    if login_username and login_password:
+    if INSTAGRAM_USERNAME and INSTAGRAM_PASSWORD:
         try:
             logger.info("Attempting to log in with provided credentials")
-            L.login(login_username, login_password)
+            L.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
             logger.info("Login successful")
         except BadCredentialsException:
             logger.error("Login failed: Invalid credentials")
