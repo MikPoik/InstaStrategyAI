@@ -2,6 +2,10 @@ import random
 from datetime import datetime, timedelta
 from typing import Dict, List
 from chat_request import send_openai_request
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
     prompt = f"""
@@ -20,7 +24,13 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
     """
 
     response = send_openai_request(prompt)
-    content_plan = eval(response)  # Convert JSON string to Python object
+
+    try:
+        content_plan = json.loads(response)
+    except json.JSONDecodeError as e:
+        logger.error(f'Error decoding JSON: {e}')
+        logger.error(f'Received response: {response}')
+        raise ValueError('Invalid JSON response from OpenAI API')
 
     # Add posting times
     now = datetime.now()
