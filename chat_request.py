@@ -11,7 +11,7 @@ def send_openai_request(prompt: str) -> str:
     response = openai_client.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "user", "content": prompt}],
-        response_format="json",
+        response_format={ "type": "json_object" },
     )
     content = response.choices[0].message.content
     if not content:
