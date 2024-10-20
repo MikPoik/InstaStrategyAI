@@ -39,6 +39,7 @@ if username and focus_area:
     
     if 'error' in profile_data:
         st.error(f"Error: {profile_data['error']}")
+        st.info('If you're experiencing rate limiting issues, please try again in a few minutes.')
     elif profile_data:
         st.header("Profile Analysis")
         col1, col2, col3 = st.columns(3)
