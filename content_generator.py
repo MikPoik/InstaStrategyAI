@@ -15,12 +15,12 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
     - Engagement rate: {profile_data['engagement_rate']:.2f}%
 
     Create a 7-day posting plan with the following structure:
-    1. Day of the week
+    1. Day of the week (e.g., Monday, Tuesday, etc.)
     2. Post type (Image, Carousel, Reel, IGTV)
     3. Caption theme
     4. Relevant hashtags (3-5)
 
-    Provide the response in JSON format.
+    Provide the response in JSON format, with each post as a dictionary containing 'day', 'post_type', 'caption_theme', and 'hashtags' keys.
     """
 
     response = send_openai_request(prompt)
@@ -39,11 +39,14 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
         logger.error(f'Received response: {response}')
         raise ValueError('Invalid JSON response from OpenAI API')
 
-    # Add posting times
+    # Add posting times and ensure 'day' key is present
     now = datetime.now()
+    days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     for i, post in enumerate(content_plan):
         post_time = now + timedelta(days=i)
         post_time = post_time.replace(hour=random.randint(9, 20), minute=random.randint(0, 59))
         post['posting_time'] = post_time.strftime("%Y-%m-%d %H:%M")
+        if 'day' not in post:
+            post['day'] = days_of_week[post_time.weekday()]
 
     return content_plan
