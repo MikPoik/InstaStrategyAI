@@ -1,5 +1,9 @@
+import logging
 from typing import Dict, List
 from chat_request import send_openai_request
+import json
+
+logger = logging.getLogger(__name__)
 
 def get_strategy_recommendations(profile_data: Dict, focus_area: str) -> List[str]:
     prompt = f"""
@@ -16,5 +20,17 @@ def get_strategy_recommendations(profile_data: Dict, focus_area: str) -> List[st
     """
 
     response = send_openai_request(prompt)
-    recommendations = eval(response)  # Convert JSON string to Python object
+    
+    try:
+        recommendations = json.loads(response)
+        if not isinstance(recommendations, list):
+            raise ValueError('Unexpected recommendations format')
+    except json.JSONDecodeError as e:
+        logger.error(f'Error decoding JSON: {e}')
+        logger.error(f'Received response: {response}')
+        recommendations = ['Error: Unable to generate recommendations. Please try again.']
+    except ValueError as e:
+        logger.error(f'Error processing recommendations: {e}')
+        recommendations = ['Error: Unexpected recommendations format. Please try again.']
+    
     return recommendations
