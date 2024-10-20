@@ -52,7 +52,7 @@ def analyze_instagram_profile(username: str) -> Dict:
 
             logger.info("Fetching recent posts")
             posts = list(profile.get_posts())[:50]  # Analyze last 50 posts
-            logger.info(f"Fetched {len(posts)} posts")
+            logger.info(f"Number of posts retrieved: {len(posts)}")
             
             hashtags = []
             likes = []
@@ -61,10 +61,16 @@ def analyze_instagram_profile(username: str) -> Dict:
             logger.info("Analyzing posts")
             for i, post in enumerate(posts):
                 logger.info(f'Analyzing post {i+1}/{len(posts)}')
+                logger.info(f"Post object {i+1}: {post}")
+                logger.info(f"Post {i+1} has caption_hashtags: {'caption_hashtags' in dir(post)}")
+                logger.info(f"Post {i+1} has likes: {'likes' in dir(post)}")
+                logger.info(f"Post {i+1} has comments: {'comments' in dir(post)}")
                 try:
                     hashtags.extend(post.caption_hashtags)
                     likes.append(post.likes)
                     comments.append(post.comments)
+                except AttributeError as e:
+                    logger.error(f"Error processing post {i+1}: {str(e)}")
                 except QueryReturnedBadRequestException as e:
                     if 'feedback_required' in str(e):
                         logger.warning(f'Feedback required error. Retrying in {base_delay * (2 ** attempt)} seconds...')
