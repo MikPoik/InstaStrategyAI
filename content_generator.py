@@ -28,25 +28,46 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
     try:
         content_plan = json.loads(response)
         
-        if isinstance(content_plan, list):
-            content_plan = [post if isinstance(post, dict) else {'content': post} for post in content_plan]
-        elif isinstance(content_plan, dict):
-            content_plan = [content_plan]
-        else:
-            raise ValueError('Unexpected content_plan format')
+        if not isinstance(content_plan, list):
+            raise ValueError('Content plan should be a list of dictionaries')
+        
+        formatted_content_plan = []
+        for post in content_plan:
+            if not isinstance(post, dict):
+                logger.warning(f"Unexpected post format: {post}")
+                continue
+            
+            formatted_post = {
+                'day': post.get('day', ''),
+                'post_type': post.get('post_type', ''),
+                'caption_theme': post.get('caption_theme', ''),
+                'hashtags': post.get('hashtags', [])
+            }
+            
+            if all(formatted_post.values()):
+                formatted_content_plan.append(formatted_post)
+            else:
+                logger.warning(f"Skipping incomplete post: {post}")
+        
+        if not formatted_content_plan:
+            raise ValueError('No valid posts in the content plan')
+        
     except json.JSONDecodeError as e:
         logger.error(f'Error decoding JSON: {e}')
         logger.error(f'Received response: {response}')
         raise ValueError('Invalid JSON response from OpenAI API')
+    except Exception as e:
+        logger.error(f'Unexpected error: {str(e)}')
+        raise ValueError(f'Error processing content plan: {str(e)}')
 
-    # Add posting times and ensure 'day' key is present
+    # Add posting times
     now = datetime.now()
     days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    for i, post in enumerate(content_plan):
+    for i, post in enumerate(formatted_content_plan):
         post_time = now + timedelta(days=i)
         post_time = post_time.replace(hour=random.randint(9, 20), minute=random.randint(0, 59))
         post['posting_time'] = post_time.strftime("%Y-%m-%d %H:%M")
-        if 'day' not in post:
+        if not post['day']:
             post['day'] = days_of_week[post_time.weekday()]
 
-    return content_plan
+    return formatted_content_plan
