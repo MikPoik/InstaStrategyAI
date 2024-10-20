@@ -7,7 +7,7 @@ import random
 from collections import Counter
 from nltk.corpus import stopwords
 from typing import Dict, List
-from instaloader.exceptions import ConnectionException, BadCredentialsException
+from instaloader.exceptions import ConnectionException, BadCredentialsException, QueryReturnedBadRequestException
 
 nltk.download('stopwords', quiet=True)
 
@@ -20,21 +20,13 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 # Retrieve Instagram credentials from environment variables
-INSTAGRAM_USERNAME = os.environ.get('INSTAGRAM_USERNAME')
-INSTAGRAM_PASSWORD = os.environ.get('INSTAGRAM_PASSWORD')
+INSTAGRAM_USERNAME = os.getenv('INSTAGRAM_USERNAME')
+INSTAGRAM_PASSWORD = os.getenv('INSTAGRAM_PASSWORD')
 
 def analyze_instagram_profile(username: str) -> Dict:
     L = instaloader.Instaloader()
     logger.info(f'Analyzing Instagram profile for username: {username}')
     
-    state = {
-        'profile_fetched': False,
-        'posts_fetched': False,
-        'posts_analyzed': 0,
-        'profile': None,
-        'posts': None,
-    }
-
     if INSTAGRAM_USERNAME and INSTAGRAM_PASSWORD:
         try:
             logger.info("Attempting to log in with provided credentials")
@@ -46,58 +38,59 @@ def analyze_instagram_profile(username: str) -> Dict:
         except Exception as e:
             logger.error(f"Login failed: {str(e)}")
             return {'error': f'Login failed: {str(e)}'}
-
-    max_retries = 5
-    base_delay = 60  # 1 minute
+    else:
+        logger.info("Login credentials not set!")
+    
+    max_retries = 7
+    base_delay = 120  # 2 minutes
 
     for attempt in range(max_retries):
         try:
-            if not state['profile_fetched']:
-                logger.info("Fetching profile information")
-                state['profile'] = instaloader.Profile.from_username(L.context, username)
-                logger.info(f"Profile fetched successfully: {state['profile']}")
-                state['profile_fetched'] = True
+            logger.info("Fetching profile information")
+            profile = instaloader.Profile.from_username(L.context, username)
+            logger.info(f"Profile fetched: {profile.username}")
 
-            if not state['posts_fetched']:
-                logger.info("Fetching recent posts")
-                state['posts'] = list(state['profile'].get_posts())[:50]
-                logger.info(f"Fetched {len(state['posts'])} posts successfully")
-                state['posts_fetched'] = True
-
+            logger.info("Fetching recent posts")
+            posts = list(profile.get_posts())[:50]  # Analyze last 50 posts
+            logger.info(f"Fetched {len(posts)} posts")
+            
             hashtags = []
             likes = []
             comments = []
-
+            
             logger.info("Analyzing posts")
-            for i, post in enumerate(state['posts'][state['posts_analyzed']:], start=state['posts_analyzed']):
-                logger.info(f'Analyzing post {i+1}/{len(state["posts"])}')
-                hashtags.extend(post.caption_hashtags)
-                likes.append(post.likes)
-                comments.append(post.comments)
-                state['posts_analyzed'] += 1
-                logger.info(f"Post {i+1} analyzed successfully")
-                time.sleep(random.uniform(2, 5))
-
+            for i, post in enumerate(posts):
+                logger.info(f'Analyzing post {i+1}/{len(posts)}')
+                try:
+                    hashtags.extend(post.caption_hashtags)
+                    likes.append(post.likes)
+                    comments.append(post.comments)
+                except QueryReturnedBadRequestException as e:
+                    if 'feedback_required' in str(e):
+                        logger.warning(f'Feedback required error. Retrying in {base_delay * (2 ** attempt)} seconds...')
+                        time.sleep(base_delay * (2 ** attempt))
+                        continue
+                    else:
+                        raise
+                time.sleep(random.uniform(5, 10))  # Increased random delay between 5-10 seconds
+            
             logger.info("Calculating top hashtags")
             top_hashtags = [tag for tag, _ in Counter(hashtags).most_common(5)]
-            logger.info(f"Top hashtags calculated: {top_hashtags}")
-
+            
             logger.info("Calculating engagement metrics")
             avg_likes = sum(likes) / len(likes) if likes else 0
             avg_comments = sum(comments) / len(comments) if comments else 0
-            engagement_rate = (avg_likes + avg_comments) / state['profile'].followers * 100 if state['profile'].followers else 0
-            logger.info(f"Engagement rate calculated: {engagement_rate:.2f}%")
-
+            engagement_rate = (avg_likes + avg_comments) / profile.followers * 100 if profile.followers else 0
+            
             logger.info("Fetching similar accounts")
-            similar_accounts = [account.username for account in state['profile'].get_similar_accounts()][:5]
-            logger.info(f"Similar accounts fetched: {similar_accounts}")
-
+            similar_accounts = [account.username for account in profile.get_similar_accounts()][:5]
+            
             logger.info("Analysis complete")
             return {
-                'username': state['profile'].username,
-                'followers': state['profile'].followers,
-                'following': state['profile'].followees,
-                'posts': state['profile'].mediacount,
+                'username': profile.username,
+                'followers': profile.followers,
+                'following': profile.followees,
+                'posts': profile.mediacount,
                 'top_hashtags': top_hashtags,
                 'engagement_rate': engagement_rate,
                 'similar_accounts': similar_accounts
@@ -106,16 +99,20 @@ def analyze_instagram_profile(username: str) -> Dict:
         except instaloader.exceptions.ProfileNotExistsException:
             logger.error(f"Profile does not exist: {username}")
             return {'error': 'Profile does not exist'}
-        except instaloader.exceptions.ConnectionException as e:
-            if 'Please wait a few minutes before you try again' in str(e):
-                logger.warning(f'Rate limit hit. Retrying in {base_delay * (2 ** attempt)} seconds...')
-                time.sleep(base_delay * (2 ** attempt))
+        except ConnectionException as e:
+            if 'Please wait a few minutes before you try again' in str(e) or 'feedback_required' in str(e):
+                delay = base_delay * (2 ** attempt)
+                logger.warning(f'Rate limit or feedback required. Retrying in {delay} seconds...')
+                time.sleep(delay)
             else:
                 logger.error(f'Connection error: {str(e)}')
                 return {'error': 'Connection error. Please try again later.'}
+        except Exception as e:
+            logger.error(f'Unexpected error: {str(e)}')
+            return {'error': f'An unexpected error occurred: {str(e)}'}
 
     logger.error('Max retries reached. Unable to complete analysis.')
-    return {'error': 'Unable to complete analysis due to persistent rate limiting.'}
+    return {'error': 'Unable to complete analysis due to persistent rate limiting or feedback required errors.'}
 
 def extract_keywords(text: str) -> List[str]:
     stop_words = set(stopwords.words('english'))
