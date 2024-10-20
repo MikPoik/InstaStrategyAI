@@ -5,7 +5,7 @@ import logging
 from collections import Counter
 from nltk.corpus import stopwords
 from typing import Dict, List
-from instaloader.exceptions import ConnectionException
+from instaloader.exceptions import ConnectionException, BadCredentialsException
 
 nltk.download('stopwords', quiet=True)
 
@@ -17,9 +17,22 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-def analyze_instagram_profile(username: str) -> Dict:
+def analyze_instagram_profile(username: str, login_username: str = None, login_password: str = None) -> Dict:
     L = instaloader.Instaloader()
     logger.info(f"Analyzing Instagram profile for username: {username}")
+    
+    if login_username and login_password:
+        try:
+            logger.info("Attempting to log in with provided credentials")
+            L.login(login_username, login_password)
+            logger.info("Login successful")
+        except BadCredentialsException:
+            logger.error("Login failed: Invalid credentials")
+            return {'error': 'Login failed: Invalid credentials'}
+        except Exception as e:
+            logger.error(f"Login failed: {str(e)}")
+            return {'error': f'Login failed: {str(e)}'}
+    
     try:
         logger.info("Fetching profile information")
         profile = instaloader.Profile.from_username(L.context, username)

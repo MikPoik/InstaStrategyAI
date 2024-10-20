@@ -14,8 +14,12 @@ st.title("Instagram Marketing Manager AI")
 st.image("assets/instagram_logo.svg", width=100)
 
 st.sidebar.header("Input Instagram Profile")
-username = st.sidebar.text_input("Enter Instagram username")
+username = st.sidebar.text_input("Enter Instagram username to analyze")
 focus_area = st.sidebar.text_input("Enter your content focus area")
+
+st.sidebar.header("Instagram Login (Optional)")
+login_username = st.sidebar.text_input("Instagram Login Username")
+login_password = st.sidebar.text_input("Instagram Login Password", type="password")
 
 if username and focus_area:
     # Set up StringIO object to capture log messages
@@ -27,7 +31,7 @@ if username and focus_area:
     logging.getLogger().addHandler(ch)
 
     with st.spinner("Analyzing profile..."):
-        profile_data = analyze_instagram_profile(username)
+        profile_data = analyze_instagram_profile(username, login_username, login_password)
     
     # Capture the log output
     log_contents = log_capture_string.getvalue()
@@ -73,4 +77,4 @@ else:
     st.info("Please enter an Instagram username and content focus area to get started.")
 
 st.sidebar.markdown("---")
-st.sidebar.info("This app analyzes Instagram profiles and provides marketing recommendations. It does not store any personal data or require authentication.")
+st.sidebar.info("This app analyzes Instagram profiles and provides marketing recommendations. It does not store any personal data or require authentication. If provided, login credentials are used only for the current session and are not saved.")
