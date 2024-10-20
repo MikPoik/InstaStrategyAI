@@ -27,6 +27,13 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
 
     try:
         content_plan = json.loads(response)
+        
+        if isinstance(content_plan, list):
+            content_plan = [post if isinstance(post, dict) else {'content': post} for post in content_plan]
+        elif isinstance(content_plan, dict):
+            content_plan = [content_plan]
+        else:
+            raise ValueError('Unexpected content_plan format')
     except json.JSONDecodeError as e:
         logger.error(f'Error decoding JSON: {e}')
         logger.error(f'Received response: {response}')
