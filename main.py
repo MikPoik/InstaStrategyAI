@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 from io import StringIO
+from flask import Flask
+from database import init_db
 import logging
 import os
 from instagram_analyzer import analyze_instagram_profile
@@ -11,6 +13,9 @@ from data_visualizer import create_posting_schedule_chart, create_engagement_cha
 # Retrieve Instagram credentials from environment variables
 INSTAGRAM_USERNAME = os.environ.get('INSTAGRAM_USERNAME')
 INSTAGRAM_PASSWORD = os.environ.get('INSTAGRAM_PASSWORD')
+
+app = Flask(__name__)
+init_db(app)
 
 st.set_page_config(page_title="Instagram Marketing Manager AI", layout="wide")
 

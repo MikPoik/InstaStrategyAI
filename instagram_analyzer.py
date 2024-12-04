@@ -6,6 +6,7 @@ from collections import Counter
 from nltk.corpus import stopwords
 from typing import Dict, List
 
+from database import get_cached_profile, cache_profile
 nltk.download('stopwords', quiet=True)
 
 # Set up logger
@@ -55,8 +56,15 @@ def get_medias(client, user_id, max_amount=None):
             break
 
     return list(medias.values())
-def analyze_instagram_profile(username: str) -> Dict:
+def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dict:
     logger.info(f'Analyzing Instagram profile for username: {username}')
+    
+    # Check cache first if not forcing refresh
+    if not force_refresh:
+        cached_data = get_cached_profile(username)
+        if cached_data:
+            logger.info(f'Retrieved cached data for {username}')
+            return cached_data
     
     try:
         # Initialize HikerAPI client
@@ -131,7 +139,7 @@ def analyze_instagram_profile(username: str) -> Dict:
             similar_accounts = []
         
         logger.info("Analysis complete")
-        return {
+        profile_data = {
             'username': user_info['username'],
             'followers': followers_count,
             'following': user_info.get('following_count', 0),
@@ -140,6 +148,11 @@ def analyze_instagram_profile(username: str) -> Dict:
             'engagement_rate': engagement_rate,
             'similar_accounts': similar_accounts
         }
+        
+        # Cache the profile data
+        cache_profile(profile_data)
+        
+        return profile_data
         
     except Exception as e:
         logger.error(f'Unexpected error: {str(e)}')
