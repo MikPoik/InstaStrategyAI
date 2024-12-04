@@ -19,6 +19,42 @@ logger.addHandler(handler)
 # Get HikerAPI token from environment
 HIKERAPI_TOKEN = os.getenv('HIKERAPI_TOKEN')
 
+def get_medias(client, user_id, max_amount=None):
+    medias = {}
+    medias_len = -1
+    end_cursor = None
+    while len(medias) > medias_len:
+        medias_len = len(medias)
+        try:
+            res = client.user_medias_chunk_v1(user_id=user_id, end_cursor=end_cursor)
+            # Handle nested structure - res is a list of lists containing media items
+            if res and isinstance(res, list) and len(res) > 0:
+                for media_group in res:
+                    if isinstance(media_group, list):
+                        for item in media_group:
+                            if isinstance(item, dict) and 'pk' in item:
+                                medias[item['pk']] = item
+
+                # Safely check for end_cursor
+                if len(res) > 0 and isinstance(res[-1], list) and len(res[-1]) > 0:
+                    last_item = res[-1][-1]
+                    if isinstance(last_item, str):
+                        end_cursor = last_item
+                    else:
+                        end_cursor = None
+                else:
+                    end_cursor = None
+            else:
+                break
+
+            if not end_cursor:
+                break
+
+        except Exception as e:
+            logger.error(f"Error occurred while fetching media: {e}")
+            break
+
+    return list(medias.values())
 def analyze_instagram_profile(username: str) -> Dict:
     logger.info(f'Analyzing Instagram profile for username: {username}')
     
@@ -37,30 +73,9 @@ def analyze_instagram_profile(username: str) -> Dict:
         user_info = profile['user']
         user_id = user_info['pk']
         
-        # Fetch recent media with pagination
+        # Fetch recent posts
         logger.info("Fetching recent posts")
-        posts = []
-        end_cursor = None
-        max_posts = 50  # Adjust this number as needed
-
-        while len(posts) < max_posts:
-            media_response = client.user_medias_chunk_v1(user_id, max_amount=20, end_cursor=end_cursor)
-            
-            # Log the response for debugging
-            logger.info(f"Media response: {media_response.keys()}")
-            
-            if not media_response or 'items' not in media_response:
-                break
-                
-            batch_posts = media_response.get('items', [])
-            posts.extend(batch_posts)
-            
-            # Check if we have more pages
-            if 'next_cursor' in media_response and media_response['next_cursor']:
-                end_cursor = media_response['next_cursor']
-            else:
-                break
-
+        posts = get_medias(client, user_id, max_amount=50)  # Limit to 50 posts
         logger.info(f"Number of posts retrieved: {len(posts)}")
         
         hashtags = []
