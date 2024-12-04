@@ -83,7 +83,7 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
         
         # Fetch recent posts
         logger.info("Fetching recent posts")
-        posts = get_medias(client, user_id, max_amount=50)  # Limit to 50 posts
+        posts = get_medias(client, user_id, max_amount=5)  # Limit to 50 posts
         logger.info(f"Number of posts retrieved: {len(posts)}")
         
         hashtags = []
