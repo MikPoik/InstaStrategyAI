@@ -1,0 +1,433 @@
+
+class hikerapi.Client(token: str | None = None, timeout: float | None = 10)
+
+    Bases: BaseSyncClient
+
+    comment_likers_chunk_gql(media_id: str, end_cursor: str | None = None) → Dict
+
+        Comment Likers Chunk. Get likers on a comment
+
+    comment_likers_gql(media_id: str, amount: int | None = None) → Dict
+
+        Comment Likers. Get likers on a comment
+
+    comments_chunk_gql(media_id: str, end_cursor: str | None = None) → Dict
+
+        Media Comments Chunk. Get comments on a media
+
+    comments_gql(media_id: str, amount: int | None = None, max_requests: int | None = None) → Dict
+
+        May return fewer comments than there are if instagram limits the issue (use /gql/comments/chunk instead). Get comments on a media
+
+    comments_threaded_chunk_gql(comment_id: str, end_cursor: str | None = None) → Dict
+
+        Media Comments Threaded Chunk. Get threaded comments for comment
+
+    comments_threaded_gql(comment_id: str, amount: int | None = None) → Dict
+
+        Media Comments Threaded. Get threaded comments for comment
+
+    fbsearch_places_v1(query: str, lat: float | None = None, lng: float | None = None) → Dict
+
+        Fbsearch Places. Search locations
+
+    fbsearch_topsearch_hashtags_v1(query: str) → Dict
+
+        Web Search Topsearch Hashtags. Search hashtags via topsearch
+
+    fbsearch_topsearch_v1(query: str) → Dict
+
+        Fbsearch Topsearch. Topsearch
+
+    hashtag_a1(name: str) → Dict
+
+        Hashtag. Get hashtag object
+
+    hashtag_by_name_v1(name: str) → Dict
+
+        Hashtag By Name. Get hashtag object by name
+
+    hashtag_medias_clips_chunk_v1(name: str, max_amount: int | None = None, max_id: str | None = None) → Dict
+
+        Hashtag Medias Clips Chunk. Get hashtag chunk of clips (reels)
+
+    hashtag_medias_clips_v1(name: str, amount: int | None = None) → Dict
+
+        Hashtag Medias Clips. Get hashtag clips (reels)
+
+    hashtag_medias_recent_chunk_v1(name: str, max_amount: int | None = None, max_id: str | None = None) → Dict
+
+        Hashtag Medias Recent Chunk. Get hashtag chunk of recent medias
+
+    hashtag_medias_recent_v1(name: str, amount: int | None = None) → Dict
+
+        Hashtag Medias Recent. Get hashtag medias top
+
+    hashtag_medias_top_chunk_v1(name: str, max_amount: int | None = None, max_id: str | None = None) → Dict
+
+        Hashtag Medias Top Chunk. Get hashtag chunk of top medias
+
+    hashtag_medias_top_v1(name: str, amount: int | None = None) → Dict
+
+        Hashtag Medias Top. Get hashtag medias top
+
+    highlight_by_id_v1(id: int) → Dict
+
+        Highlight By Id. Get highlight object by id
+
+    highlight_by_url_v1(url: str) → Dict
+
+        Attention! To work with /s/ links, call /v1/share/by/url first. Get highlight object by id
+
+    location_a1(id: int) → Dict
+
+        Location. Get location object
+
+    location_by_id_v1(id: int) → Dict
+
+        Location By Id. Get location object by id
+
+    location_guides_v1(location_pk: int) → Dict
+
+        Location Guides V1. Get location guides
+
+    location_medias_recent_chunk_v1(location_pk: int, max_amount: int | None = None, max_id: str | None = None) → Dict
+
+        Location Medias Recent Chunk. Get location chunk of recent medias
+
+    location_medias_recent_v1(location_pk: int, amount: int | None = None) → Dict
+
+        Location Medias Recent V1. Get location recent medias
+
+    location_medias_top_chunk_v1(location_pk: int, max_amount: int | None = None, max_id: str | None = None) → Dict
+
+        Location Medias Top Chunk. Get location chunk of top medias
+
+    location_medias_top_v1(location_pk: int, amount: int | None = None) → Dict
+
+        Location Medias Top V1. Get location top medias
+
+    location_search_v1(lat: float, lng: float) → Dict
+
+        Location Search. Get locations using lat and long
+
+    media_a1(code: str) → Dict
+
+        Media. Get media object
+
+    media_by_code_v1(code: str) → Dict
+
+        Media By Code. Get media object
+
+    media_by_code_v2(code: str) → Dict
+
+        Media By Code. Get media object
+
+    media_by_id_a1(id: int) → Dict
+
+        Media By Id. Get media object
+
+    media_by_id_v1(id: str) → Dict
+
+        Media By Id. Get media object
+
+    media_by_id_v2(id: str) → Dict
+
+        Media By Id. Get media object
+
+    media_by_url_a1(url: str) → Dict
+
+        Media By Url. Get media object
+
+    media_by_url_v1(url: str) → Dict
+
+        Media By Url. Get media object
+
+    media_by_url_v2(url: str) → Dict
+
+        Media By Url. Get media object
+
+    media_code_from_pk_v1(pk: str) → Dict
+
+        Media Code From Pk. Get media code from pk
+
+    media_comments_chunk_v1(id: str, min_id: str | None = None, max_id: str | None = None) → Dict
+
+        Get media comments (one request return 20 comments). Get comments on a media
+
+    media_download_photo_by_url_v1(url: str) → Dict
+
+        Photo Download By Url. Download photo using URL
+
+    media_download_photo_v1(id: str) → Dict
+
+        Photo Download. Download photo using media pk
+
+    media_download_video_by_url_v1(url: str) → Dict
+
+        Video Download By Url. Download video using URL
+
+    media_download_video_v1(id: str) → Dict
+
+        Video Download. Download video using media pk
+
+    media_insight_v1(media_id: str) → Dict
+
+        Insights Media. Get media insight
+
+    media_likers(media_id: str, page_id: str | None = None, count: int | None = None, container: List[Dict] | None = None, max_requests: int | None = None) → List[Dict]
+
+        Get likers on media
+
+    media_likers_chunk_gql(media_id: str, end_cursor: str | None = None) → Dict
+
+        Media Likers Chunk. Get likers on media (returns 50 users in one request)
+
+    media_likers_gql(media_id: str, amount: int | None = None) → Dict
+
+        Media Likers. Get likers on a media (for every 50 users an request will be made)
+
+    media_likers_v1(id: str) → Dict
+
+        Media Likers. Get user’s likers
+
+    media_likers_v2(id: str) → Dict
+
+        Media Likers. Get user’s likers
+
+    media_oembed_v1(url: str) → Dict
+
+        Media Oembed. Return info about media and user from post URL
+
+    media_pk_from_code_v1(code: str) → Dict
+
+        Media Pk From Code. Get media pk from code
+
+    media_pk_from_url_v1(url: str) → Dict
+
+        Media Pk From Url. Get Media pk from URL
+
+    media_user_v1(media_id: str) → Dict
+
+        Media User. Get author of the media
+
+    search_hashtags_v1(query: str) → Dict
+
+        Search Hashtags. Search hashtags
+
+    search_music_v1(query: str) → Dict
+
+        Search Music. Search music
+
+    search_users_v1(query: str) → Dict
+
+        Search Users. Search users
+
+    share_by_code_v1(code: str) → Dict
+
+        Share By Code. Get share object by code (aGlnaGxpZ2h0OjE4MTQ2MjE2Njk4MDIyMTc0 -> {“pk”: 18146216698022176, “type”: “highlight”})
+
+    share_by_url_v1(url: str) → Dict
+
+        Share By Url. Get share object by url ( https://www.instagram.com/s/aGlnaGxpZ2h0OjE4MTQ2MjE2Njk4MDIyMTc0 -> {“pk”: 18146216698022176, “type”: “highlight”})
+
+    story_by_id_v1(id: int) → Dict
+
+        Story By Id. Get story object by id
+
+    story_by_url_v1(url: str) → Dict
+
+        Attention! To work with /s/ links, call /v1/share/by/url first. Get story object by id
+
+    story_download_by_story_url_v1(url: str) → Dict
+
+        Download story file by story URL. Download story file by story URL Example: https://instagram.com/stories/example/30038568123745341231284
+
+    story_download_by_url_v1(url: str) → Dict
+
+        Download story file by URL to file. Download story file by URL to file (you can take it from “/v1/story/by/id” or “/v1/story/by/url”) Example: https://scontent-lga3-1.cdninstagram.com/v/t66.30100-16/310890533_1622838408176007_5601749632271872566_n.mp4?efg=…
+
+    story_download_v1(id: str) → Dict
+
+        Story Download. Download story media by story id
+
+    track_by_canonical_id_v2(canonical_id: str) → Dict
+
+        Track By Canonical Id. Get music track object by canonical_id
+
+    track_by_id_v2(track_id: str) → Dict
+
+        Track By Id. Get music track object by id
+
+    user_a1(username: str) → Dict
+
+        User
+
+    user_by_id_v1(id: str) → Dict
+
+        User By Id. Get user object by id
+
+    user_by_id_v2(id: str) → Dict
+
+        User By Id. Get user object by id
+
+    user_by_url_v1(url: str) → Dict
+
+        Get user object by URL (one request required). Get user object by URL
+
+    user_by_username_v1(username: str) → Dict
+
+        Get user object by username (one request required). Get user object by username
+
+    user_by_username_v2(username: str) → Dict
+
+        Get user object by username (one request required). Get user object by username
+
+    user_clips(user_id: str, page_id: str | None = None, count: int | None = None, container: List[Dict] | None = None, max_requests: int | None = None) → List[Dict]
+
+        User Clips. Get user clips.
+
+    user_clips_chunk_v1(user_id: str, end_cursor: str | None = None) → Dict
+
+        User Clips Chunk. Get part of user clips with cursor (default 50 media per request)
+
+    user_clips_v1(user_id: str, amount: int | None = None) → Dict
+
+        Get user clips (one request is required for every 50 media). Get user clips
+
+    user_clips_v2(user_id: str, page_id: str | None = None) → Dict
+
+        User Clips. Get user clips.
+
+    user_followers(user_id: str, page_id: str | None = None, count: int | None = None, container: List[Dict] | None = None, max_requests: int | None = None) → List[Dict]
+
+        Get a user followers (one request required). Get part (one page) of followers users with cursor
+
+    user_followers_chunk_gql(user_id: str, amount: int | None = None, end_cursor: str | None = None) → Dict
+
+        Get a user followers (one request required). Get part (one page) of followers users with cursor
+
+    user_followers_chunk_v1(user_id: str, amount: int | None = None, max_id: str | None = None) → Dict
+
+        Get a user followers (one request required). Get part (one page) of followers users with cursor
+
+    user_followers_gql(user_id: str, amount: int | None = None) → Dict
+
+        Get a user followers (one request is required for every 46 followers). Get followers users
+
+    user_followers_v1(user_id: str, amount: int | None = None) → Dict
+
+        Get a user followers (one request is required for every 100-1000 followers). Get followers users
+
+    user_followers_v2(user_id: str, page_id: str | None = None) → Dict
+
+        Get a user followers (one request required). Get part (one page) of followers users with cursor
+
+    user_following(user_id: str, page_id: str | None = None, count: int | None = None, container: List[Dict] | None = None, max_requests: int | None = None) → List[Dict]
+
+        Get a user following (one request required). Get part (one page) of following users
+
+    user_following_chunk_gql(user_id: str, amount: int | None = None, end_cursor: str | None = None) → Dict
+
+        Get a user following (one request required). Get part (one page) of following users with cursor
+
+    user_following_chunk_v1(user_id: str, amount: int | None = None, max_id: str | None = None) → Dict
+
+        Get a user following (one request required). Get part (one page) of following users with cursor
+
+    user_following_gql(user_id: str, amount: int | None = None) → Dict
+
+        Get a user following (one request is required for every 46 following). Get following users
+
+    user_following_v1(user_id: str, amount: int | None = None) → Dict
+
+        User Following. Get following users
+
+    user_following_v2(user_id: str, page_id: str | None = None) → Dict
+
+        Get a user following (one request required). Get part (one page) of following users
+
+    user_guides_v1(user_id: int) → Dict
+
+        User Guides V1. Get user guides
+
+    user_highlights_by_username_v1(username: str, amount: int | None = None) → Dict
+
+        User Highlights By Username. Get user highlights by username
+
+    user_highlights_v1(user_id: str, amount: int | None = None) → Dict
+
+        User Highlights. Get user highlights
+
+    user_medias(user_id: str, page_id: str | None = None, count: int | None = None, container: List[Dict] | None = None, max_requests: int | None = None) → List[Dict]
+
+        User Medias. Get user medias. Results paginated.
+
+    user_medias_chunk_v1(user_id: str, max_amount: int | None = None, end_cursor: str | None = None) → Dict
+
+        User Medias Chunk. Get part of user medias with cursor
+
+    user_medias_pinned_v1(user_id: str, amount: int | None = None) → Dict
+
+        Get pinned medias. Get user medias
+
+    user_medias_v1(user_id: str, amount: int | None = None) → Dict
+
+        Get user medias (one request is required for every 33 media). Get user medias
+
+    user_medias_v2(user_id: str, page_id: str | None = None) → Dict
+
+        User Medias. Get user medias. Results paginated.
+
+    user_related_profiles_gql(id: str) → Dict
+
+        Related Profiles. Get related profiles by user id
+
+    user_search_followers_v1(user_id: str, query: str) → Dict
+
+        Search Followers. Search users by followers
+
+    user_search_following_v1(user_id: str, query: str) → Dict
+
+        Search Following. Search users by following users
+
+    user_stories_by_username_v1(username: str, amount: int | None = None) → Dict
+
+        User Stories By Username. Get user stories
+
+    user_stories_by_username_v2(username: str) → Dict
+
+        User Stories By Username. Get user stories
+
+    user_stories_v1(user_id: str, amount: int | None = None) → Dict
+
+        User Stories. Get user stories
+
+    user_stories_v2(user_id: str) → Dict
+
+        User Stories. Get user stories
+
+    user_tag_medias_chunk_v1(user_id: str, max_id: str | None = None) → Dict
+
+        Usertag Medias Chunk. Get usertag medias
+
+    user_videos(user_id: str, page_id: str | None = None, count: int | None = None, container: List[Dict] | None = None, max_requests: int | None = None) → List[Dict]
+
+        User Videos. Get part of user videos with cursor (default 50 media per request)
+
+    user_videos_chunk_v1(user_id: str, max_amount: int | None = None, end_cursor: str | None = None) → Dict
+
+        User Videos Chunk. Get part of user videos with cursor (default 50 media per request)
+
+    user_videos_v1(user_id: str, amount: int | None = None) → Dict
+
+        Get user videos (one request is required for every 50 media). Get user videos
+
+    user_videos_v2(user_id: str, page_id: str | None = None) → Dict
+
+        User Videos. Get part of user videos with cursor (default 50 media per request)
+
+    user_web_profile_info_v1(username: str) → Dict
+
+        Web Profile Info
+
