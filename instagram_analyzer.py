@@ -37,18 +37,30 @@ def analyze_instagram_profile(username: str) -> Dict:
         user_info = profile['user']
         user_id = user_info['pk']
         
-        # Fetch recent media
+        # Fetch recent media with pagination
         logger.info("Fetching recent posts")
-        media_response = client.user_medias_v1(user_id, amount=10)  # Get last 10 posts
-        logging.info(media_response)
-        
-        if isinstance(media_response, dict) and 'items' in media_response:
-            posts = media_response['items']
-        elif isinstance(media_response, list):
-            posts = media_response
-        else:
-            posts = []
-        
+        posts = []
+        end_cursor = None
+        max_posts = 50  # Adjust this number as needed
+
+        while len(posts) < max_posts:
+            media_response = client.user_medias_chunk_v1(user_id, max_amount=20, end_cursor=end_cursor)
+            
+            # Log the response for debugging
+            logger.info(f"Media response: {media_response.keys()}")
+            
+            if not media_response or 'items' not in media_response:
+                break
+                
+            batch_posts = media_response.get('items', [])
+            posts.extend(batch_posts)
+            
+            # Check if we have more pages
+            if 'next_cursor' in media_response and media_response['next_cursor']:
+                end_cursor = media_response['next_cursor']
+            else:
+                break
+
         logger.info(f"Number of posts retrieved: {len(posts)}")
         
         hashtags = []
