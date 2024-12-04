@@ -88,15 +88,17 @@ def analyze_instagram_profile(username: str) -> Dict:
             logger.info(f'Analyzing post {i+1}/{len(posts)}')
             try:
                 # Extract hashtags from caption
-                if post.get('caption') and post['caption'].get('text'):
-                    caption_text = post['caption']['text']
+                if post.get('caption_text'):
+                    caption_text = post['caption_text']
                     # Extract hashtags from caption text
                     post_hashtags = [word[1:] for word in caption_text.split() if word.startswith('#')]
                     hashtags.extend(post_hashtags)
                 
                 # Get likes and comments count
                 likes.append(post.get('like_count', 0))
+                logger.info(f"Likes for post {i+1}: {post.get('like_count', 0)}")
                 comments.append(post.get('comment_count', 0))
+                logger.info(f"Comments for post {i+1}: {post.get('comment_count'), 0}")
                 
             except Exception as e:
                 logger.error(f"Error processing post {i+1}: {str(e)}")
@@ -113,10 +115,20 @@ def analyze_instagram_profile(username: str) -> Dict:
         
         # Get similar accounts (suggested users)
         logger.info("Fetching similar accounts")
-        similar_accounts_response = client.user_related_profiles_gql(user_id)
-        similar_accounts = []
-        if 'users' in similar_accounts_response:
-            similar_accounts = [user['username'] for user in similar_accounts_response['users'][:5]]
+        try:
+            similar_accounts_response = client.user_related_profiles_gql(user_id)
+            similar_accounts = []
+            # The response is a list of user objects, each containing username
+            if isinstance(similar_accounts_response, list):
+                similar_accounts = [
+                    user['username'] 
+                    for user in similar_accounts_response[:5] 
+                    if isinstance(user, dict) and 'username' in user
+                ]
+            logger.info(f"Found {len(similar_accounts)} similar accounts")
+        except Exception as e:
+            logger.error(f"Error fetching similar accounts: {str(e)}")
+            similar_accounts = []
         
         logger.info("Analysis complete")
         return {
