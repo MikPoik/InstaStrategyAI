@@ -236,6 +236,15 @@ wheels = [
 ]
 
 [[package]]
+name = "hikerapi"
+version = "1.5.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/99/26/a9f264d4669b0811beee98be84342f020fab3b2b509d1d622e2c68b40d3b/hikerapi-1.5.1.tar.gz", hash = "sha256:94fa574529993ba32f4f25a219d894c9c5ce88b5eaac7bc1a8d6a7e41405cf0e", size = 12007 }
+
+[[package]]
 name = "htmldate"
 version = "1.9.1"
 source = { registry = "https://pypi.org/simple" }
@@ -954,6 +963,7 @@ name = "repl-nix-workspace"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "hikerapi" },
     { name = "instaloader" },
     { name = "nltk" },
     { name = "numpy" },
@@ -966,6 +976,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "hikerapi", specifier = ">=1.5.1" },
     { name = "instaloader", specifier = ">=4.13.1" },
     { name = "nltk", specifier = ">=3.9.1" },
     { name = "numpy", specifier = ">=2.1.2" },

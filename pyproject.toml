@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
+    "hikerapi>=1.5.1",
     "instaloader>=4.13.1",
     "nltk>=3.9.1",
     "numpy>=2.1.2",
