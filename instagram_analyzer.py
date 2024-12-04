@@ -40,11 +40,14 @@ def analyze_instagram_profile(username: str) -> Dict:
         # Fetch recent media
         logger.info("Fetching recent posts")
         media_response = client.user_medias_v1(user_id, amount=10)  # Get last 10 posts
+        logging.info(media_response)
         
-        if 'items' not in media_response:
-            posts = []
-        else:
+        if isinstance(media_response, dict) and 'items' in media_response:
             posts = media_response['items']
+        elif isinstance(media_response, list):
+            posts = media_response
+        else:
+            posts = []
         
         logger.info(f"Number of posts retrieved: {len(posts)}")
         
