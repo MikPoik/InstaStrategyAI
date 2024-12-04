@@ -14,10 +14,16 @@ from data_visualizer import create_posting_schedule_chart, create_engagement_cha
 INSTAGRAM_USERNAME = os.environ.get('INSTAGRAM_USERNAME')
 INSTAGRAM_PASSWORD = os.environ.get('INSTAGRAM_PASSWORD')
 
+# Initialize Streamlit configuration first
+st.set_page_config(page_title="Instagram Marketing Manager AI", layout="wide")
+
+# Initialize Flask and database
 app = Flask(__name__)
 init_db(app)
 
-st.set_page_config(page_title="Instagram Marketing Manager AI", layout="wide")
+# Push an application context that will be used for database operations
+app_ctx = app.app_context()
+app_ctx.push()
 
 st.title("Instagram Marketing Manager AI")
 
@@ -37,7 +43,8 @@ if username and focus_area:
     logging.getLogger().addHandler(ch)
 
     with st.spinner("Analyzing profile..."):
-        profile_data = analyze_instagram_profile(username)
+        with app.app_context():
+            profile_data = analyze_instagram_profile(username)
     
     # Capture the log output
     log_contents = log_capture_string.getvalue()

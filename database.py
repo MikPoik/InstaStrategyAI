@@ -16,7 +16,12 @@ def init_db(app):
         db.create_all()
 
 def get_cached_profile(username):
+    from flask import current_app
     from models import InstagramProfile
+    
+    if not current_app:
+        raise RuntimeError("No Flask application context")
+        
     profile = InstagramProfile.query.filter_by(username=username).first()
     
     if profile and profile.cache_valid_until and profile.cache_valid_until > datetime.utcnow():
@@ -24,8 +29,12 @@ def get_cached_profile(username):
     return None
 
 def cache_profile(profile_data):
+    from flask import current_app
     from models import InstagramProfile
     
+    if not current_app:
+        raise RuntimeError("No Flask application context")
+        
     profile = InstagramProfile.query.filter_by(username=profile_data['username']).first()
     if profile:
         # Update existing profile
