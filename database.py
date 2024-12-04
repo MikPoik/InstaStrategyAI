@@ -1,7 +1,8 @@
 import os
 from flask_migrate import Migrate
 from models import db
-from datetime import datetime
+from datetime import datetime, timedelta
+import json
 
 migrate = Migrate()
 
@@ -44,8 +45,7 @@ def cache_profile(profile_data):
             elif hasattr(profile, key):
                 setattr(profile, key, value)
         profile.last_updated = datetime.utcnow()
-        profile.cache_valid_until = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) + \
-                                  db.func.interval('1 day')
+        profile.cache_valid_until = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
     else:
         # Create new profile
         profile = InstagramProfile.from_api_response(profile_data)

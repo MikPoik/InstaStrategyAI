@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 
 db = SQLAlchemy()
@@ -40,5 +40,5 @@ class InstagramProfile(db.Model):
             top_hashtags=json.dumps(data['top_hashtags']),
             similar_accounts=json.dumps(data['similar_accounts']),
             cache_valid_until=datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) + 
-                            db.func.interval('1 day')
+                            timedelta(days=1)
         )
