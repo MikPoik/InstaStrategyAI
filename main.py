@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 from io import StringIO
-from flask import Flask
+from flask import Flask, render_template, redirect, url_for
+from flask_login import login_required, current_user
 from database import init_db
 import logging
 import os
@@ -9,6 +10,8 @@ from instagram_analyzer import analyze_instagram_profile
 from content_generator import generate_content_plan
 from strategy_recommender import get_strategy_recommendations
 from data_visualizer import create_posting_schedule_chart, create_engagement_chart
+from auth import auth, init_login_manager
+from payments import payments
 
 # Retrieve Instagram credentials from environment variables
 INSTAGRAM_USERNAME = os.environ.get('INSTAGRAM_USERNAME')
@@ -19,7 +22,13 @@ st.set_page_config(page_title="Instagram Marketing Manager AI", layout="wide")
 
 # Initialize Flask and database
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 init_db(app)
+
+# Initialize authentication
+init_login_manager(app)
+app.register_blueprint(auth, url_prefix='/auth')
+app.register_blueprint(payments, url_prefix='/payment')
 
 # Push an application context that will be used for database operations
 app_ctx = app.app_context()
