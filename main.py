@@ -53,7 +53,7 @@ if username and focus_area:
         st.error(f"Error: {profile_data['error']}")
         st.info("If you're experiencing rate limiting issues, please try again in a few minutes.")
     elif profile_data:
-        st.header("Profile Analysis")
+        st.header(f"Profile Analysis: {profile_data['username']}")
         col1, col2, col3 = st.columns(3)
         col1.metric("Followers", profile_data['followers'])
         col2.metric("Following", profile_data['following'])
