@@ -31,7 +31,7 @@ def get_cached_profile(username):
 
 def cache_profile(profile_data):
     from flask import current_app
-    from models import InstagramProfile
+    from models import InstagramProfile, SimilarAccount
     
     if not current_app:
         raise RuntimeError("No Flask application context")
@@ -40,9 +40,9 @@ def cache_profile(profile_data):
     if profile:
         # Update existing profile
         for key, value in profile_data.items():
-            if key in ['top_hashtags', 'similar_accounts']:
+            if key == 'top_hashtags':
                 setattr(profile, key, json.dumps(value))
-            elif hasattr(profile, key):
+            elif key != 'similar_accounts' and hasattr(profile, key):
                 setattr(profile, key, value)
         profile.last_updated = datetime.utcnow()
         profile.cache_valid_until = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
@@ -50,5 +50,21 @@ def cache_profile(profile_data):
         # Create new profile
         profile = InstagramProfile.from_api_response(profile_data)
         db.session.add(profile)
+    
+    # Clear existing similar accounts
+    SimilarAccount.query.filter_by(profile_id=profile.id).delete()
+    
+    # Add new similar accounts
+    for account_data in profile_data.get('similar_accounts', []):
+        similar_account = SimilarAccount(
+            username=account_data['username'],
+            full_name=account_data.get('full_name', ''),
+            category=account_data.get('category', ''),
+            followers=account_data.get('followers', 0),
+            engagement_rate=account_data.get('engagement_rate', 0.0),
+            top_hashtags=json.dumps(account_data.get('top_hashtags', [])),
+            profile=profile
+        )
+        db.session.add(similar_account)
     
     db.session.commit()

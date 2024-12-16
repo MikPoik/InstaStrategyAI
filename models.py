@@ -4,8 +4,32 @@ import json
 
 db = SQLAlchemy()
 
+class SimilarAccount(db.Model):
+    __tablename__ = 'similar_accounts'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(255), nullable=False)
+    full_name = db.Column(db.String(255))
+    category = db.Column(db.String(255))
+    followers = db.Column(db.Integer)
+    engagement_rate = db.Column(db.Float)
+    top_hashtags = db.Column(db.Text)  # Stored as JSON
+    profile_id = db.Column(db.Integer, db.ForeignKey('instagram_profiles.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'username': self.username,
+            'full_name': self.full_name,
+            'category': self.category,
+            'followers': self.followers,
+            'engagement_rate': self.engagement_rate,
+            'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else []
+        }
+
 class InstagramProfile(db.Model):
     __tablename__ = 'instagram_profiles'
+    similar_accounts_data = db.relationship('SimilarAccount', backref='profile', lazy=True)
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), unique=True, nullable=False)

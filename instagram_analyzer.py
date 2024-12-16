@@ -133,14 +133,51 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
         try:
             similar_accounts_response = client.user_related_profiles_gql(user_id)
             similar_accounts = []
-            # The response is a list of user objects, each containing username
+            logger.info("Processing similar accounts")
+            
             if isinstance(similar_accounts_response, list):
-                similar_accounts = [
-                    user['username'] 
-                    for user in similar_accounts_response[:5] 
-                    if isinstance(user, dict) and 'username' in user
-                ]
-            logger.info(f"Found {len(similar_accounts)} similar accounts")
+                for user in similar_accounts_response[:5]:
+                    if isinstance(user, dict) and 'username' in user:
+                        try:
+                            # Fetch detailed info for each similar account
+                            similar_profile = client.user_by_username_v2(user['username'])
+                            if 'user' in similar_profile:
+                                similar_user = similar_profile['user']
+                                
+                                # Get posts to calculate engagement rate
+                                similar_posts = get_medias(client, similar_user['pk'], max_amount=5)
+                                likes = [post.get('like_count', 0) for post in similar_posts]
+                                comments = [post.get('comment_count', 0) for post in similar_posts]
+                                
+                                avg_likes = sum(likes) / len(likes) if likes else 0
+                                avg_comments = sum(comments) / len(comments) if comments else 0
+                                followers_count = similar_user.get('follower_count', 0)
+                                engagement_rate = (avg_likes + avg_comments) / followers_count * 100 if followers_count else 0
+                                
+                                # Extract hashtags from posts
+                                hashtags = []
+                                for post in similar_posts:
+                                    if post.get('caption_text'):
+                                        post_hashtags = [word[1:] for word in post['caption_text'].split() if word.startswith('#')]
+                                        hashtags.extend(post_hashtags)
+                                
+                                top_hashtags = [tag for tag, _ in Counter(hashtags).most_common(5)]
+                                
+                                similar_account_data = {
+                                    'username': similar_user['username'],
+                                    'full_name': similar_user.get('full_name', ''),
+                                    'category': similar_user.get('category', ''),
+                                    'followers': followers_count,
+                                    'engagement_rate': engagement_rate,
+                                    'top_hashtags': top_hashtags
+                                }
+                                similar_accounts.append(similar_account_data)
+                                logger.info(f"Processed similar account: {similar_user['username']}")
+                        except Exception as e:
+                            logger.error(f"Error processing similar account {user['username']}: {str(e)}")
+                            continue
+            
+            logger.info(f"Found and analyzed {len(similar_accounts)} similar accounts")
         except Exception as e:
             logger.error(f"Error fetching similar accounts: {str(e)}")
             similar_accounts = []
