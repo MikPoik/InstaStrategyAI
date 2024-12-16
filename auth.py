@@ -57,8 +57,8 @@ def callback():
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     token_endpoint = google_provider_cfg["token_endpoint"]
 
-    callback_url = f"{replit_domain}/auth/login/callback"
-    print(callback_url)
+    callback_url = request.base_url
+    print(f"Callback URL: {callback_url}")
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=request.url,
