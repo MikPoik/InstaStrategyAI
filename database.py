@@ -56,6 +56,10 @@ def cache_profile(profile_data):
     
     # Add new similar accounts
     for account_data in profile_data.get('similar_accounts', []):
+        # Clean and encode post texts properly
+        post_texts = account_data.get('post_texts', [])
+        cleaned_post_texts = [text.strip() if isinstance(text, str) else str(text) for text in post_texts]
+        
         similar_account = SimilarAccount(
             username=account_data['username'],
             full_name=account_data.get('full_name', ''),
@@ -63,7 +67,7 @@ def cache_profile(profile_data):
             followers=account_data.get('followers', 0),
             engagement_rate=account_data.get('engagement_rate', 0.0),
             top_hashtags=json.dumps(account_data.get('top_hashtags', [])),
-            post_texts=json.dumps(account_data.get('post_texts', [])),
+            post_texts=json.dumps(cleaned_post_texts),
             profile=profile
         )
         db.session.add(similar_account)

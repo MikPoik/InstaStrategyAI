@@ -19,15 +19,27 @@ class SimilarAccount(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def to_dict(self):
-        return {
-            'username': self.username,
-            'full_name': self.full_name,
-            'category': self.category,
-            'followers': self.followers,
-            'engagement_rate': self.engagement_rate,
-            'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
-            'post_texts': json.loads(self.post_texts) if self.post_texts else []
-        }
+        try:
+            return {
+                'username': self.username,
+                'full_name': self.full_name,
+                'category': self.category,
+                'followers': self.followers,
+                'engagement_rate': self.engagement_rate,
+                'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
+                'post_texts': json.loads(self.post_texts) if self.post_texts else []
+            }
+        except json.JSONDecodeError:
+            logger.error(f"JSON decode error for similar account {self.username}")
+            return {
+                'username': self.username,
+                'full_name': self.full_name,
+                'category': self.category,
+                'followers': self.followers,
+                'engagement_rate': self.engagement_rate,
+                'top_hashtags': [],
+                'post_texts': []
+            }
 
 class InstagramProfile(db.Model):
     __tablename__ = 'instagram_profiles'
@@ -49,19 +61,35 @@ class InstagramProfile(db.Model):
     cache_valid_until = db.Column(db.DateTime)
 
     def to_dict(self):
-        return {
-            'username': self.username,
-            'full_name': self.full_name,
-            'biography': self.biography,
-            'category': self.category,
-            'followers': self.followers,
-            'following': self.following,
-            'posts': self.posts_count,
-            'engagement_rate': self.engagement_rate,
-            'top_hashtags': json.loads(self.top_hashtags),
-            'similar_accounts': json.loads(self.similar_accounts),
-            'post_texts': json.loads(self.post_texts) if self.post_texts else []
-        }
+        try:
+            return {
+                'username': self.username,
+                'full_name': self.full_name,
+                'biography': self.biography,
+                'category': self.category,
+                'followers': self.followers,
+                'following': self.following,
+                'posts': self.posts_count,
+                'engagement_rate': self.engagement_rate,
+                'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
+                'similar_accounts': json.loads(self.similar_accounts) if self.similar_accounts else [],
+                'post_texts': json.loads(self.post_texts) if self.post_texts else []
+            }
+        except json.JSONDecodeError:
+            logger.error(f"JSON decode error for profile {self.username}")
+            return {
+                'username': self.username,
+                'full_name': self.full_name,
+                'biography': self.biography,
+                'category': self.category,
+                'followers': self.followers,
+                'following': self.following,
+                'posts': self.posts_count,
+                'engagement_rate': self.engagement_rate,
+                'top_hashtags': [],
+                'similar_accounts': [],
+                'post_texts': []
+            }
 
     @staticmethod
     def from_api_response(data):
