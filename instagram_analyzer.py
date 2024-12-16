@@ -155,16 +155,16 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
                                 engagement_rate = (avg_likes + avg_comments) / followers_count * 100 if followers_count else 0
                                 
                                 # Extract hashtags from posts
-                                hashtags = []
-                                post_texts = []
+                                similar_hashtags = []
+                                similar_post_texts = []
                                 for post in similar_posts:
                                     if post.get('caption_text'):
                                         caption_text = post['caption_text']
                                         post_texts.append(caption_text.split("#")[0])  # Store text before hashtags
                                         post_hashtags = [word[1:] for word in caption_text.split() if word.startswith('#')]
-                                        hashtags.extend(post_hashtags)
+                                        similar_hashtags.extend(post_hashtags)
                                 
-                                top_hashtags = [tag for tag, _ in Counter(hashtags).most_common(5)]
+                                top_hashtags = [tag for tag, _ in Counter(similar_hashtags).most_common(5)]
                                 
                                 similar_account_data = {
                                     'username': similar_user['username'],
