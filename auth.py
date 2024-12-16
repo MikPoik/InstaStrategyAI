@@ -46,6 +46,8 @@ def callback():
     # Debug logging
     print(f"Request URL: {request.url}")
     print(f"Request args: {request.args}")
+    print(f"Request headers: {dict(request.headers)}")
+    print(f"Request path: {request.path}")
     
     code = request.args.get("code")
     if not code:
@@ -56,6 +58,7 @@ def callback():
     token_endpoint = google_provider_cfg["token_endpoint"]
 
     callback_url = f"{replit_domain}/auth/login/callback"
+    print(callback_url)
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=request.url,
