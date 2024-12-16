@@ -35,32 +35,31 @@ def login():
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
     
-    print(replit_domain)
+    # Use HTTPS for external URLs
+    callback_url = f"{replit_domain}/auth/login/callback"
+    if not callback_url.startswith('https://'):
+        callback_url = callback_url.replace('http://', 'https://')
+    
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
-        redirect_uri=f"{replit_domain}/auth/login/callback",
+        redirect_uri=callback_url,
         scope=["openid", "email", "profile"],
     )
     return redirect(request_uri)
 
 @auth.route("/login/callback")
 def callback():
-    print("login callback")
     try:
-        # Debug logging
-        print(f"Request URL: {request.url}")
-        print(f"Request args: {request.args}")
-        
         code = request.args.get("code")
         if not code:
-            print("No code received in callback")
             return "Authentication failed - no code received", 400
             
         google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
         token_endpoint = google_provider_cfg["token_endpoint"]
 
         callback_url = f"{replit_domain}/auth/login/callback"
-        print(f"Callback URL: {callback_url}")
+        if not callback_url.startswith('https://'):
+            callback_url = callback_url.replace('http://', 'https://')
         
         token_url, headers, body = client.prepare_token_request(
             token_endpoint,

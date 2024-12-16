@@ -6,6 +6,8 @@ from flask_login import login_required, current_user
 from database import init_db
 import logging
 import os
+import os
+from auth import replit_domain
 from instagram_analyzer import analyze_instagram_profile
 from content_generator import generate_content_plan
 from strategy_recommender import get_strategy_recommendations
@@ -69,10 +71,10 @@ if st.session_state.authenticated:
         
         with col2:
             if st.button("View Pricing Plans"):
-                with app.test_client() as client:
-                    response = client.get('/auth/pricing')
-                    if response.location:
-                        st.markdown(f'<meta http-equiv="refresh" content="0;url=/auth/pricing">', unsafe_allow_html=True)
+                pricing_url = f"{replit_domain}/auth/pricing"
+                if not pricing_url.startswith('https://'):
+                    pricing_url = pricing_url.replace('http://', 'https://')
+                st.markdown(f'<meta http-equiv="refresh" content="0;url={pricing_url}">', unsafe_allow_html=True)
         st.stop()
     
     # Main navigation for authenticated users
