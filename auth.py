@@ -27,7 +27,7 @@ def init_login_manager(app):
 @auth.route("/login")
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('main'))
+        return redirect('/')
         
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
