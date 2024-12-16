@@ -43,25 +43,24 @@ def login():
 @auth.route("/login/callback")
 def callback():
     print("login callback")
-    # Debug logging
-    print(f"Request URL: {request.url}")
-    print(f"Request args: {request.args}")
-    print(f"Request headers: {dict(request.headers)}")
-    print(f"Request path: {request.path}")
-    
-    code = request.args.get("code")
-    if not code:
-        print("No code received in callback")
-        return "Authentication failed - no code received", 400
+    try:
+        # Debug logging
+        print(f"Request URL: {request.url}")
+        print(f"Request args: {request.args}")
         
-    google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
-    token_endpoint = google_provider_cfg["token_endpoint"]
+        code = request.args.get("code")
+        if not code:
+            print("No code received in callback")
+            return "Authentication failed - no code received", 400
+            
+        google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
+        token_endpoint = google_provider_cfg["token_endpoint"]
 
-    callback_url = request.base_url
-    print(f"Callback URL: {callback_url}")
+        callback_url = f"{replit_domain}/auth/login/callback"
+        print(f"Callback URL: {callback_url}")
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
-        authorization_response=request.url,
+        authorization_response=request.url.replace('http:', 'https:'),
         redirect_url=callback_url,
         code=code,
     )
