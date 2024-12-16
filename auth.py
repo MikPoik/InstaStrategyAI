@@ -1,3 +1,4 @@
+
 import os
 import json
 import requests
@@ -58,13 +59,14 @@ def callback():
 
         callback_url = f"{replit_domain}/auth/login/callback"
         print(f"Callback URL: {callback_url}")
-    token_url, headers, body = client.prepare_token_request(
-        token_endpoint,
-        authorization_response=request.url.replace('http:', 'https:'),
-        redirect_url=callback_url,
-        code=code,
-    )
-    try:
+        
+        token_url, headers, body = client.prepare_token_request(
+            token_endpoint,
+            authorization_response=request.url.replace('http:', 'https:'),
+            redirect_url=callback_url,
+            code=code,
+        )
+        
         print(f"Token URL: {token_url}")
         print(f"Headers: {headers}")
         print(f"Body: {body}")
@@ -84,28 +86,28 @@ def callback():
             
         token_data = token_response.json()
         client.parse_request_body_response(json.dumps(token_data))
+        
+        userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
+        uri, headers, body = client.add_token(userinfo_endpoint)
+        userinfo_response = requests.get(uri, headers=headers, data=body)
+        
+        if userinfo_response.json().get("email_verified"):
+            users_email = userinfo_response.json()["email"]
+            users_name = userinfo_response.json().get("given_name", users_email.split('@')[0])
+        else:
+            return "User email not verified by Google.", 400
+
+        user = User.query.filter_by(email=users_email).first()
+        if not user:
+            user = User(username=users_name, email=users_email)
+            db.session.add(user)
+            db.session.commit()
+
+        login_user(user)
+        return redirect('/')
     except Exception as e:
-        print(f"Error in token request: {str(e)}")
+        print(f"Error in callback: {str(e)}")
         return f"Authentication error: {str(e)}", 400
-    
-    userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-    uri, headers, body = client.add_token(userinfo_endpoint)
-    userinfo_response = requests.get(uri, headers=headers, data=body)
-    
-    if userinfo_response.json().get("email_verified"):
-        users_email = userinfo_response.json()["email"]
-        users_name = userinfo_response.json().get("given_name", users_email.split('@')[0])
-    else:
-        return "User email not verified by Google.", 400
-
-    user = User.query.filter_by(email=users_email).first()
-    if not user:
-        user = User(username=users_name, email=users_email)
-        db.session.add(user)
-        db.session.commit()
-
-    login_user(user)
-    return redirect('/')
 
 @auth.route("/logout")
 @login_required
