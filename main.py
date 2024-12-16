@@ -44,7 +44,7 @@ if username and focus_area:
 
     with st.spinner("Analyzing profile..."):
         with app.app_context():
-            profile_data = analyze_instagram_profile(username)
+            profile_data = analyze_instagram_profile(username,force_refresh=True)
     
     # Capture the log output
     log_contents = log_capture_string.getvalue()

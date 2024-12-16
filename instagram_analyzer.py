@@ -89,6 +89,7 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
         hashtags = []
         likes = []
         comments = []
+        post_texts = []
         
         # Analyze posts
         logger.info("Analyzing posts")
@@ -98,6 +99,8 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
                 # Extract hashtags from caption
                 if post.get('caption_text'):
                     caption_text = post['caption_text']
+                    post_texts.append(caption_text.split("#")[0])
+                    logger.info(f"Caption text: {caption_text}")
                     # Extract hashtags from caption text
                     post_hashtags = [word[1:] for word in caption_text.split() if word.startswith('#')]
                     hashtags.extend(post_hashtags)
