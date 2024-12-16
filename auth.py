@@ -65,14 +65,29 @@ def callback():
         redirect_url=callback_url,
         code=code,
     )
-    token_response = requests.post(
-        token_url,
-        headers=headers,
-        data=body,
-        auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
-    )
-
-    client.parse_request_body_response(json.dumps(token_response.json()))
+    try:
+        print(f"Token URL: {token_url}")
+        print(f"Headers: {headers}")
+        print(f"Body: {body}")
+        
+        token_response = requests.post(
+            token_url,
+            headers=headers,
+            data=body,
+            auth=(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET),
+        )
+        
+        print(f"Token Response Status: {token_response.status_code}")
+        print(f"Token Response: {token_response.text}")
+        
+        if token_response.status_code != 200:
+            return f"Token request failed: {token_response.text}", 400
+            
+        token_data = token_response.json()
+        client.parse_request_body_response(json.dumps(token_data))
+    except Exception as e:
+        print(f"Error in token request: {str(e)}")
+        return f"Authentication error: {str(e)}", 400
     
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = client.add_token(userinfo_endpoint)
