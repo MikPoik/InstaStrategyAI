@@ -31,7 +31,8 @@ def login():
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
     
-    replit_domain = f"https://{os.environ.get('REPL_SLUG')}.{os.environ.get('REPL_OWNER')}.repl.co"
+    replit_domain = f"https://10d60081-f259-42b7-8ea6-11d107cc22e5-00-5nk7acteyu8c.picard.replit.dev"
+    print(replit_domain)
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=f"{replit_domain}/auth/login/callback",
@@ -41,14 +42,17 @@ def login():
 
 @auth.route("/login/callback")
 def callback():
+    print("login callback")
     code = request.args.get("code")
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     token_endpoint = google_provider_cfg["token_endpoint"]
     
+    replit_domain = f"https://{os.environ.get('REPL_SLUG')}-{os.environ.get('REPL_ID')}.{os.environ.get('REPL_OWNER')}.repl.dev"
+    callback_url = f"{replit_domain}/auth/login/callback"
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
-        authorization_response=request.url.replace("http://", "https://"),
-        redirect_url=request.base_url.replace("http://", "https://"),
+        authorization_response=request.url,
+        redirect_url=callback_url,
         code=code,
     )
     token_response = requests.post(
