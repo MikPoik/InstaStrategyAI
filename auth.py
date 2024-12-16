@@ -31,9 +31,10 @@ def login():
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
     
+    replit_domain = f"https://{os.environ.get('REPL_SLUG')}.{os.environ.get('REPL_OWNER')}.repl.co"
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
-        redirect_uri=request.base_url.replace("http://", "https://") + "/callback",
+        redirect_uri=f"{replit_domain}/auth/login/callback",
         scope=["openid", "email", "profile"],
     )
     return redirect(request_uri)
