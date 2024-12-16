@@ -13,6 +13,7 @@ STRIPE_PUBLISHABLE_KEY = os.environ["STRIPE_PUBLISHABLE_KEY"]
 
 auth = Blueprint("auth", __name__)
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
+replit_domain = f"https://10d60081-f259-42b7-8ea6-11d107cc22e5-00-5nk7acteyu8c.picard.replit.dev"
 
 def init_login_manager(app):
     login_manager = LoginManager()
@@ -31,11 +32,10 @@ def login():
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
     
-    replit_domain = f"https://10d60081-f259-42b7-8ea6-11d107cc22e5-00-5nk7acteyu8c.picard.replit.dev"
     print(replit_domain)
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
-        redirect_uri=f"{replit_domain}/auth/login/callback",
+        redirect_uri=f"{replit_domain}/login/callback",
         scope=["openid", "email", "profile"],
     )
     return redirect(request_uri)
@@ -47,8 +47,8 @@ def callback():
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     token_endpoint = google_provider_cfg["token_endpoint"]
     
-    replit_domain = f"https://{os.environ.get('REPL_SLUG')}-{os.environ.get('REPL_ID')}.{os.environ.get('REPL_OWNER')}.repl.dev"
-    callback_url = f"{replit_domain}/auth/login/callback"
+
+    callback_url = f"{replit_domain}/login/callback"
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=request.url,
@@ -81,7 +81,7 @@ def callback():
         db.session.commit()
 
     login_user(user)
-    return redirect(url_for('main'))
+    return redirect('/')
 
 @auth.route("/logout")
 @login_required
