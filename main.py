@@ -44,7 +44,7 @@ if username and focus_area:
 
     with st.spinner("Analyzing profile..."):
         with app.app_context():
-            profile_data = analyze_instagram_profile(username)
+            profile_data = analyze_instagram_profile(username,force_refresh=True)
     
     # Capture the log output
     log_contents = log_capture_string.getvalue()
@@ -75,7 +75,8 @@ if username and focus_area:
         st.plotly_chart(schedule_chart)
         
         st.header("Similar Accounts")
-        st.write(", ".join(profile_data['similar_accounts']))
+        similar_accounts = [account['username'] for account in profile_data['similar_accounts']]
+        st.write(", ".join(similar_accounts))
         
         st.header("Strategy Recommendations")
         recommendations = get_strategy_recommendations(profile_data, focus_area)
