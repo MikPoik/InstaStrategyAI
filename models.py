@@ -15,6 +15,7 @@ class InstagramProfile(db.Model):
     engagement_rate = db.Column(db.Float)
     top_hashtags = db.Column(db.Text)  # Stored as JSON
     similar_accounts = db.Column(db.Text)  # Stored as JSON
+    post_texts = db.Column(db.Text)  # Stored as JSON array of post texts
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
     cache_valid_until = db.Column(db.DateTime)
 
@@ -26,7 +27,8 @@ class InstagramProfile(db.Model):
             'posts': self.posts_count,
             'engagement_rate': self.engagement_rate,
             'top_hashtags': json.loads(self.top_hashtags),
-            'similar_accounts': json.loads(self.similar_accounts)
+            'similar_accounts': json.loads(self.similar_accounts),
+            'post_texts': json.loads(self.post_texts) if self.post_texts else []
         }
 
     @staticmethod
@@ -39,6 +41,7 @@ class InstagramProfile(db.Model):
             engagement_rate=data['engagement_rate'],
             top_hashtags=json.dumps(data['top_hashtags']),
             similar_accounts=json.dumps(data['similar_accounts']),
+            post_texts=json.dumps(data.get('post_texts', [])),
             cache_valid_until=datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) + 
                             timedelta(days=1)
         )

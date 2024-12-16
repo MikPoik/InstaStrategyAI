@@ -149,7 +149,8 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
             'posts': user_info.get('media_count', 0),
             'top_hashtags': top_hashtags,
             'engagement_rate': engagement_rate,
-            'similar_accounts': similar_accounts
+            'similar_accounts': similar_accounts,
+            'post_texts': post_texts
         }
         
         # Cache the profile data
