@@ -1,20 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
 from datetime import datetime, timedelta
 import json
 
 db = SQLAlchemy()
-
-class User(UserMixin, db.Model):
-    __tablename__ = 'users'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    username = db.Column(db.String(80), nullable=False)
-    subscription_status = db.Column(db.String(20), default='free')
-    subscription_end = db.Column(db.DateTime)
-    stripe_customer_id = db.Column(db.String(255), unique=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class InstagramProfile(db.Model):
     __tablename__ = 'instagram_profiles'
