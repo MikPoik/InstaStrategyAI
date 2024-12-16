@@ -75,7 +75,18 @@ if username and focus_area:
         st.plotly_chart(schedule_chart)
         
         st.header("Similar Accounts")
-        st.write(", ".join(profile_data['similar_accounts']))
+        similar_accounts = profile_data['similar_accounts']
+        similar_usernames = [account['username'] for account in similar_accounts]
+        st.write(", ".join(similar_usernames))
+        
+        # Display detailed information about similar accounts in an expander
+        with st.expander("View Similar Accounts Details"):
+            for account in similar_accounts:
+                st.subheader(account['username'])
+                st.write(f"Category: {account['category']}")
+                st.write(f"Followers: {account['followers']}")
+                st.write(f"Engagement Rate: {account['engagement_rate']:.2f}%")
+                st.write("Top Hashtags:", ", ".join(account['top_hashtags']))
         
         st.header("Strategy Recommendations")
         recommendations = get_strategy_recommendations(profile_data, focus_area)

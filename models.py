@@ -14,6 +14,7 @@ class SimilarAccount(db.Model):
     followers = db.Column(db.Integer)
     engagement_rate = db.Column(db.Float)
     top_hashtags = db.Column(db.Text)  # Stored as JSON
+    post_texts = db.Column(db.Text)  # Stored as JSON array of post texts
     profile_id = db.Column(db.Integer, db.ForeignKey('instagram_profiles.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
@@ -24,7 +25,8 @@ class SimilarAccount(db.Model):
             'category': self.category,
             'followers': self.followers,
             'engagement_rate': self.engagement_rate,
-            'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else []
+            'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
+            'post_texts': json.loads(self.post_texts) if self.post_texts else []
         }
 
 class InstagramProfile(db.Model):

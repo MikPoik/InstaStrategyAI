@@ -156,9 +156,12 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
                                 
                                 # Extract hashtags from posts
                                 hashtags = []
+                                post_texts = []
                                 for post in similar_posts:
                                     if post.get('caption_text'):
-                                        post_hashtags = [word[1:] for word in post['caption_text'].split() if word.startswith('#')]
+                                        caption_text = post['caption_text']
+                                        post_texts.append(caption_text.split("#")[0])  # Store text before hashtags
+                                        post_hashtags = [word[1:] for word in caption_text.split() if word.startswith('#')]
                                         hashtags.extend(post_hashtags)
                                 
                                 top_hashtags = [tag for tag, _ in Counter(hashtags).most_common(5)]
@@ -169,7 +172,8 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
                                     'category': similar_user.get('category', ''),
                                     'followers': followers_count,
                                     'engagement_rate': engagement_rate,
-                                    'top_hashtags': top_hashtags
+                                    'top_hashtags': top_hashtags,
+                                    'post_texts': post_texts
                                 }
                                 similar_accounts.append(similar_account_data)
                                 logger.info(f"Processed similar account: {similar_user['username']}")
