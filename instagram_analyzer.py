@@ -144,36 +144,36 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
                             if 'user' in similar_profile:
                                 similar_user = similar_profile['user']
                                 
-                                # Get posts to calculate engagement rate
+                                # Get posts to calculate engagement rate for similar account
                                 similar_posts = get_medias(client, similar_user['pk'], max_amount=5)
-                                likes = [post.get('like_count', 0) for post in similar_posts]
-                                comments = [post.get('comment_count', 0) for post in similar_posts]
+                                similar_likes = [post.get('like_count', 0) for post in similar_posts]
+                                similar_comments = [post.get('comment_count', 0) for post in similar_posts]
                                 
-                                avg_likes = sum(likes) / len(likes) if likes else 0
-                                avg_comments = sum(comments) / len(comments) if comments else 0
-                                followers_count = similar_user.get('follower_count', 0)
-                                engagement_rate = (avg_likes + avg_comments) / followers_count * 100 if followers_count else 0
+                                similar_avg_likes = sum(similar_likes) / len(similar_likes) if similar_likes else 0
+                                similar_avg_comments = sum(similar_comments) / len(similar_comments) if similar_comments else 0
+                                similar_followers_count = similar_user.get('follower_count', 0)
+                                similar_engagement_rate = (similar_avg_likes + similar_avg_comments) / similar_followers_count * 100 if similar_followers_count else 0
                                 
-                                # Extract hashtags from posts
+                                # Extract hashtags from similar account posts
                                 similar_hashtags = []
                                 similar_post_texts = []
                                 for post in similar_posts:
                                     if post.get('caption_text'):
                                         caption_text = post['caption_text']
-                                        post_texts.append(caption_text.split("#")[0])  # Store text before hashtags
+                                        similar_post_texts.append(caption_text.split("#")[0])  # Store text before hashtags
                                         post_hashtags = [word[1:] for word in caption_text.split() if word.startswith('#')]
                                         similar_hashtags.extend(post_hashtags)
                                 
-                                top_hashtags = [tag for tag, _ in Counter(similar_hashtags).most_common(5)]
+                                similar_top_hashtags = [tag for tag, _ in Counter(similar_hashtags).most_common(5)]
                                 
                                 similar_account_data = {
                                     'username': similar_user['username'],
                                     'full_name': similar_user.get('full_name', ''),
                                     'category': similar_user.get('category', ''),
-                                    'followers': followers_count,
-                                    'engagement_rate': engagement_rate,
-                                    'top_hashtags': top_hashtags,
-                                    'post_texts': post_texts
+                                    'followers': similar_followers_count,
+                                    'engagement_rate': similar_engagement_rate,
+                                    'top_hashtags': similar_top_hashtags,
+                                    'post_texts': similar_post_texts
                                 }
                                 similar_accounts.append(similar_account_data)
                                 logger.info(f"Processed similar account: {similar_user['username']}")
