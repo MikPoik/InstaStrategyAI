@@ -35,7 +35,7 @@ def login():
     print(replit_domain)
     request_uri = client.prepare_request_uri(
         authorization_endpoint,
-        redirect_uri=f"{replit_domain}/login/callback",
+        redirect_uri=f"{replit_domain}/auth/login/callback",
         scope=["openid", "email", "profile"],
     )
     return redirect(request_uri)
@@ -43,12 +43,19 @@ def login():
 @auth.route("/login/callback")
 def callback():
     print("login callback")
+    # Debug logging
+    print(f"Request URL: {request.url}")
+    print(f"Request args: {request.args}")
+    
     code = request.args.get("code")
+    if not code:
+        print("No code received in callback")
+        return "Authentication failed - no code received", 400
+        
     google_provider_cfg = requests.get(GOOGLE_DISCOVERY_URL).json()
     token_endpoint = google_provider_cfg["token_endpoint"]
-    
 
-    callback_url = f"{replit_domain}/login/callback"
+    callback_url = f"{replit_domain}/auth/login/callback"
     token_url, headers, body = client.prepare_token_request(
         token_endpoint,
         authorization_response=request.url,
