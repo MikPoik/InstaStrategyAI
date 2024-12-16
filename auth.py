@@ -14,7 +14,9 @@ STRIPE_PUBLISHABLE_KEY = os.environ["STRIPE_PUBLISHABLE_KEY"]
 
 auth = Blueprint("auth", __name__)
 client = WebApplicationClient(GOOGLE_CLIENT_ID)
-replit_domain = f"https://10d60081-f259-42b7-8ea6-11d107cc22e5-00-5nk7acteyu8c.picard.replit.dev"
+replit_domain = os.environ.get('REPLIT_DEV_DOMAIN', 'http://0.0.0.0:5000')
+if not replit_domain.startswith('http'):
+    replit_domain = f"https://{replit_domain}"
 
 def init_login_manager(app):
     login_manager = LoginManager()
@@ -104,6 +106,8 @@ def callback():
             db.session.commit()
 
         login_user(user)
+        if user.subscription_status != 'active':
+            return redirect(url_for('auth.pricing'))
         return redirect('/')
     except Exception as e:
         print(f"Error in callback: {str(e)}")

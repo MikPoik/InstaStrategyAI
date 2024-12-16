@@ -52,7 +52,27 @@ if st.session_state.authenticated:
     # Check subscription status
     if current_user.subscription_status != 'active':
         st.warning("Please subscribe to access all features")
-        st.markdown("[View Pricing Plans](/auth/pricing)")
+        
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.markdown("""
+            ### Available Plans:
+            - **Basic Plan**: $9.99/month
+                - Profile Analysis
+                - Basic Reports
+            
+            - **Pro Plan**: $29.99/month
+                - Advanced Analytics
+                - Content Planning
+                - Priority Support
+            """)
+        
+        with col2:
+            if st.button("View Pricing Plans"):
+                with app.test_client() as client:
+                    response = client.get('/auth/pricing')
+                    if response.location:
+                        st.markdown(f'<meta http-equiv="refresh" content="0;url=/auth/pricing">', unsafe_allow_html=True)
         st.stop()
     
     # Main navigation for authenticated users
