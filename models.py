@@ -9,6 +9,9 @@ class InstagramProfile(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), unique=True, nullable=False)
+    full_name = db.Column(db.String(255))
+    biography = db.Column(db.Text)
+    category = db.Column(db.String(255))
     followers = db.Column(db.Integer)
     following = db.Column(db.Integer)
     posts_count = db.Column(db.Integer)
@@ -22,6 +25,9 @@ class InstagramProfile(db.Model):
     def to_dict(self):
         return {
             'username': self.username,
+            'full_name': self.full_name,
+            'biography': self.biography,
+            'category': self.category,
             'followers': self.followers,
             'following': self.following,
             'posts': self.posts_count,
@@ -35,6 +41,9 @@ class InstagramProfile(db.Model):
     def from_api_response(data):
         return InstagramProfile(
             username=data['username'],
+            full_name=data.get('full_name', ''),
+            biography=data.get('biography', ''),
+            category=data.get('category', ''),
             followers=data['followers'],
             following=data['following'],
             posts_count=data['posts'],
