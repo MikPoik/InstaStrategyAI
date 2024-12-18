@@ -25,6 +25,7 @@ class SimilarAccount(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def to_dict(self):
+        print(self)
         try:
             return {
                 'username': self.username,
@@ -81,8 +82,11 @@ class InstagramProfile(db.Model):
                 'similar_accounts': json.loads(self.similar_accounts) if self.similar_accounts else [],
                 'post_texts': json.loads(self.post_texts) if self.post_texts else []
             }
-        except json.JSONDecodeError:
-            logger.error(f"JSON decode error for profile {self.username}")
+        except json.JSONDecodeError as e:
+            print(f"JSON Data - top_hashtags: {self.top_hashtags}")
+            print(f"JSON Data - similar_accounts: {self.similar_accounts}")
+            print(f"JSON Data - post_texts: {self.post_texts}")
+            logger.error(f"JSON decode error for profile {self.username}: {str(e)}")
             return {
                 'username': self.username,
                 'full_name': self.full_name,
