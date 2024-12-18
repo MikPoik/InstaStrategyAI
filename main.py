@@ -67,12 +67,12 @@ if username and focus_area:
         st.plotly_chart(engagement_chart)
         
         st.header("Content Posting Plan")
-        content_plan = generate_content_plan(profile_data, focus_area)
-        st.table(pd.DataFrame(content_plan))
+        #content_plan = generate_content_plan(profile_data, focus_area)
+        #st.table(pd.DataFrame(content_plan))
         
         st.subheader("Posting Schedule")
-        schedule_chart = create_posting_schedule_chart(content_plan)
-        st.plotly_chart(schedule_chart)
+        #schedule_chart = create_posting_schedule_chart(content_plan)
+        #st.plotly_chart(schedule_chart)
         
         st.header("Similar Accounts")
         similar_accounts = profile_data.get('similar_accounts', [])
@@ -80,14 +80,19 @@ if username and focus_area:
         # Display similar accounts overview
         if similar_accounts and isinstance(similar_accounts, list):
             with st.expander("View Similar Accounts Details", expanded=True):
-                for username in similar_accounts:
-                    if isinstance(username, str):
+                for account in similar_accounts:
+                    if isinstance(account, dict):
                         col1, col2 = st.columns(2)
                         with col1:
-                            st.subheader(username)
-                            st.write("Category: Influencer")
+                            st.subheader(account.get('username', 'N/A'))
+                            st.write(f"Category: {account.get('category', 'N/A')}")
+                            st.write(f"Full Name: {account.get('full_name', 'N/A')}")
                         with col2:
-                            st.write("Similar content creator")
+                            st.write(f"Followers: {account.get('followers', 0):,}")
+                            st.write(f"Engagement Rate: {account.get('engagement_rate', 0):.2f}%")
+                            if account.get('top_hashtags'):
+                                st.write("Top Hashtags:")
+                                st.write(", ".join(account['top_hashtags'][:5]))
                         st.markdown("---")
         else:
             st.info("No similar accounts found")
