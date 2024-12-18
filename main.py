@@ -89,15 +89,6 @@ if username and focus_area:
                         with col2:
                             st.write("Similar content creator")
                         st.markdown("---")
-                        with col1:
-                            st.subheader(account.get('username', 'Unknown'))
-                            st.write(f"Category: {account.get('category', 'N/A')}")
-                            st.write(f"Followers: {account.get('followers', 'N/A'):,}")
-                        with col2:
-                            st.write(f"Engagement Rate: {account.get('engagement_rate', 0):.2f}%")
-                            if account.get('top_hashtags'):
-                                st.write("Top Hashtags:", ", ".join(account.get('top_hashtags', [])))
-                        st.markdown("---")
         else:
             st.info("No similar accounts found")
         
