@@ -44,7 +44,7 @@ if username and focus_area:
 
     with st.spinner("Analyzing profile..."):
         with app.app_context():
-            profile_data = analyze_instagram_profile(username,force_refresh=True)
+            profile_data = analyze_instagram_profile(username)
     
     # Capture the log output
     log_contents = log_capture_string.getvalue()
@@ -75,13 +75,35 @@ if username and focus_area:
         st.plotly_chart(schedule_chart)
         
         st.header("Similar Accounts")
-        similar_accounts = [account['username'] for account in profile_data['similar_accounts']]
-        st.write(", ".join(similar_accounts))
+        similar_accounts = profile_data.get('similar_accounts', [])
         
-        st.header("Strategy Recommendations")
-        recommendations = get_strategy_recommendations(profile_data, focus_area)
-        for i, rec in enumerate(recommendations, 1):
-            st.write(f"{i}. {rec}")
+        if isinstance(similar_accounts, str):
+            try:
+                import json
+                similar_accounts = json.loads(similar_accounts)
+            except json.JSONDecodeError:
+                similar_accounts = []
+
+        # Display similar accounts overview
+        if similar_accounts:
+            similar_usernames = [account['username'] for account in similar_accounts if isinstance(account, dict)]
+            st.write("Similar accounts found:", ", ".join(similar_usernames))
+
+            # Display detailed information about similar accounts in an expander
+            with st.expander("View Similar Accounts Details"):
+                for account in similar_accounts:
+                    if isinstance(account, dict):
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.subheader(account.get('username', 'Unknown'))
+                            st.write(f"Category: {account.get('category', 'N/A')}")
+                            st.write(f"Followers: {account.get('followers', 'N/A'):,}")
+                        with col2:
+                            st.write(f"Engagement Rate: {account.get('engagement_rate', 0):.2f}%")
+                            st.write("Top Hashtags:", ", ".join(account.get('top_hashtags', [])))
+                        st.markdown("---")
+        else:
+            st.info("No similar accounts found")
         
         # Display logs in an expander
         with st.expander("View Analysis Logs"):
