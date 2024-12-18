@@ -79,7 +79,6 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
             return {'error': 'Profile does not exist'}
             
         user_info = profile['user']
-        logger.info("User profile: %s", user_info)
         full_name = user_info['full_name']
         biography = user_info['biography']
         category = user_info['category']
