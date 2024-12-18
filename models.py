@@ -39,7 +39,7 @@ class SimilarAccount(db.Model):
             print("Error in similar Account")
             print(f"JSON decode error for profile {self.username}: {str(e)}")
             print(f"JSON Data - top_hashtags: {self.top_hashtags}")
-            print(f"JSON Data - post_texts: {self.post_texts}")
+            #print(f"JSON Data - post_texts: {self.post_texts}")
             logger.error(f"JSON decode error for similar account {self.username}")
             return {
                 'username': self.username,
@@ -72,11 +72,6 @@ class InstagramProfile(db.Model):
 
     def to_dict(self):
         try:
-            # First get the similar accounts from the relationship
-            similar_accounts_list = []
-            if self.similar_accounts_data:
-                similar_accounts_list = [account.to_dict() for account in self.similar_accounts_data]
-            
             return {
                 'username': self.username,
                 'full_name': self.full_name,
@@ -87,13 +82,15 @@ class InstagramProfile(db.Model):
                 'posts': self.posts_count,
                 'engagement_rate': self.engagement_rate,
                 'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
-                'similar_accounts': similar_accounts_list,
-                'post_texts': json.loads(self.post_texts) if self.post_texts else []
+                'similar_accounts': json.loads(self.similar_accounts) if self.similar_accounts else [],
+                #'post_texts': json.loads(self.post_texts) if self.post_texts else []
             }
         except json.JSONDecodeError as e:
+            print("Error in InstagramProfile")
+            print(f"JSON Data - top_hashtags: {self.top_hashtags}")
+            print(f"JSON Data - similar_accounts: {self.similar_accounts}")
+            #print(f"JSON Data - post_texts: {self.post_texts}")
             logger.error(f"JSON decode error for profile {self.username}: {str(e)}")
-            logger.error(f"JSON Data - top_hashtags: {self.top_hashtags}")
-            logger.error(f"JSON Data - post_texts: {self.post_texts}")
             return {
                 'username': self.username,
                 'full_name': self.full_name,
