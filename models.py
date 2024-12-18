@@ -72,6 +72,9 @@ class InstagramProfile(db.Model):
 
     def to_dict(self):
         try:
+            # Get similar accounts from the relationship
+            similar_accounts_list = [account.to_dict() for account in self.similar_accounts_data] if self.similar_accounts_data else []
+            
             return {
                 'username': self.username,
                 'full_name': self.full_name,
@@ -82,7 +85,7 @@ class InstagramProfile(db.Model):
                 'posts': self.posts_count,
                 'engagement_rate': self.engagement_rate,
                 'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
-                'similar_accounts': json.loads(self.similar_accounts) if self.similar_accounts else [],
+                'similar_accounts': similar_accounts_list,
                 #'post_texts': json.loads(self.post_texts) if self.post_texts else []
             }
         except json.JSONDecodeError as e:
