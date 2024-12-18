@@ -77,20 +77,23 @@ if username and focus_area:
         st.header("Similar Accounts")
         similar_accounts = profile_data.get('similar_accounts', [])
         
+        # Debug info
+        st.write("Debug - Similar accounts type:", type(similar_accounts))
+        st.write("Debug - Similar accounts data:", similar_accounts)
+        
+        # Try to parse if it's a string
         if isinstance(similar_accounts, str):
             try:
                 import json
                 similar_accounts = json.loads(similar_accounts)
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as e:
+                st.error(f"Failed to parse similar accounts: {e}")
                 similar_accounts = []
 
         # Display similar accounts overview
-        if similar_accounts:
-            similar_usernames = [account['username'] for account in similar_accounts if isinstance(account, dict)]
-            st.write("Similar accounts found:", ", ".join(similar_usernames))
-
+        if similar_accounts and isinstance(similar_accounts, list):
             # Display detailed information about similar accounts in an expander
-            with st.expander("View Similar Accounts Details"):
+            with st.expander("View Similar Accounts Details", expanded=True):
                 for account in similar_accounts:
                     if isinstance(account, dict):
                         col1, col2 = st.columns(2)
@@ -100,7 +103,8 @@ if username and focus_area:
                             st.write(f"Followers: {account.get('followers', 'N/A'):,}")
                         with col2:
                             st.write(f"Engagement Rate: {account.get('engagement_rate', 0):.2f}%")
-                            st.write("Top Hashtags:", ", ".join(account.get('top_hashtags', [])))
+                            if account.get('top_hashtags'):
+                                st.write("Top Hashtags:", ", ".join(account.get('top_hashtags', [])))
                         st.markdown("---")
         else:
             st.info("No similar accounts found")
