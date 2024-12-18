@@ -76,27 +76,19 @@ if username and focus_area:
         
         st.header("Similar Accounts")
         similar_accounts = profile_data.get('similar_accounts', [])
-        
-        # Debug info
-        st.write("Debug - Similar accounts type:", type(similar_accounts))
-        st.write("Debug - Similar accounts data:", similar_accounts)
-        
-        # Try to parse if it's a string
-        if isinstance(similar_accounts, str):
-            try:
-                import json
-                similar_accounts = json.loads(similar_accounts)
-            except json.JSONDecodeError as e:
-                st.error(f"Failed to parse similar accounts: {e}")
-                similar_accounts = []
 
         # Display similar accounts overview
         if similar_accounts and isinstance(similar_accounts, list):
-            # Display detailed information about similar accounts in an expander
             with st.expander("View Similar Accounts Details", expanded=True):
-                for account in similar_accounts:
-                    if isinstance(account, dict):
+                for username in similar_accounts:
+                    if isinstance(username, str):
                         col1, col2 = st.columns(2)
+                        with col1:
+                            st.subheader(username)
+                            st.write("Category: Influencer")
+                        with col2:
+                            st.write("Similar content creator")
+                        st.markdown("---")
                         with col1:
                             st.subheader(account.get('username', 'Unknown'))
                             st.write(f"Category: {account.get('category', 'N/A')}")
