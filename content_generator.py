@@ -7,60 +7,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def get_formatted_post_texts(post_texts):
-    if not post_texts:
-        print("No post texts found for profile")
-        return []
-
-    try:
-        # If it's already a list, return it
-        if isinstance(post_texts, list):
-            print("List")
-            print(post_texts)
-
-            list_posts_texts = json.loads(post_texts[0])
-            print("JSON_LOADED")
-            print(list_posts_texts)
-            return post_texts
-
-        # If it's a string, try to parse it
-        if isinstance(post_texts, str):
-            print("String")
-            # Try standard JSON parsing first
-            try:
-                return json.loads(post_texts)
-            except json.JSONDecodeError:
-                # Handle malformed JSON like {"text1","text2"}
-                print("Failed to load Post Text Json")
-                #if post_texts.startswith('{') and post_texts.endswith('}'):
-                    # Remove braces and split by comma
-                #    texts = post_texts[1:-1].split('","')
-                    # Clean up quotes and whitespace
-                #    return [text.strip('" ') for text in texts if text.strip()]
-
-        return []
-    except Exception as e:
-        logger.error(f'Error formatting post texts: {str(e)}')
-        return []
-
-        
 def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
-    texts_array = profile_data['post_texts'][0]
-    post_texts = json.loads(texts_array)#get_formatted_post_texts(profile_data.get('post_texts', []))
-    print(post_texts)
+    # Get post texts directly from the profile data
+    # Now post_texts comes as a list of strings from the database relationship
+    post_texts = profile_data.get('post_texts', [])
+    logger.info(f"Retrieved {len(post_texts)} post texts")
 
     # Safely get sample post texts
     sample_texts = ""
-    if len(post_texts) > 0:
-        print(len(post_texts))
-        sample_texts = ""
+    if post_texts:
+        # Take up to 2 random samples if available
         sampled_indices = random.sample(range(len(post_texts)), min(2, len(post_texts)))
         for i in sampled_indices:
             text = post_texts[i]
             if isinstance(text, str):
-                text = text.split('","')[0].replace('{"', "") if '","' in text else text
                 sample_texts += f"\n    > {text}"
-    return []
+
     prompt = f"""
     # Generate a content plan for an Instagram account with the following details:
     - Username: {profile_data['username']}
@@ -70,7 +32,7 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
     - Focus area: {focus_area}
     - Top hashtags: {', '.join(profile_data['top_hashtags'])}
     - Engagement rate: {profile_data['engagement_rate']:.2f}%
-    
+
     <SampleText>
     {sample_texts}
     </SampleText>
@@ -91,39 +53,38 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
 
     Provide the response in JSON format, with each post as a dictionary containing 'day', 'post_type', 'caption_theme','caption_text' and 'hashtags' keys.
     format example:
-    {{
+    {
         "posts": [
-            {{
+            {
                 "day": "",
                 "post_type": "",
                 "caption_theme": "",
                 "caption_text": "",
                 "hashtags": ["#hashtag", "#hashtag", "#hashtag"]
-            }},
+            },
             ...
             ]
-    }}
+    }
     """
-    print(prompt)
+    logger.info("Sending prompt to OpenAI")
     response = send_openai_request(prompt)
-    print(response)
+    logger.info("Received response from OpenAI")
 
     try:
         content_plan = json.loads(response)
-        print(content_plan)
         if isinstance(content_plan, dict) and 'posts' in content_plan:
             content_plan = content_plan['posts']
         if isinstance(content_plan, dict):
             content_plan = [content_plan]
         elif not isinstance(content_plan, list):
             raise ValueError('Unexpected content plan format')
-        
+
         formatted_content_plan = []
         for post in content_plan:
             if not isinstance(post, dict):
                 logger.warning(f'Skipping invalid post: {post}')
                 continue
-            
+
             formatted_post = {
                 'day': post.get('day', ''),
                 'post_type': post.get('post_type', ''),
@@ -131,42 +92,38 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
                 'caption_text': post.get('caption_text', ''),
                 'hashtags': ','.join(post.get('hashtags', []))
             }
-            
+
             if all(formatted_post.values()):
                 formatted_content_plan.append(formatted_post)
-        
+
         if not formatted_content_plan:
             raise ValueError('No valid posts in the content plan')
 
     except (json.JSONDecodeError, ValueError) as e:
         logger.error(f'Error processing content plan: {str(e)}')
         logger.error(f'Received response: {response}')
-        print("Default plan")
         # Create a default content plan
         formatted_content_plan = [
             {
                 'day': 'Monday',
                 'post_type': 'Image',
                 'caption_theme': 'Motivational Monday',
-                'hashtags': ['#MondayMotivation', '#NewWeek', '#GoalSetting']
+                'caption_text': 'Default caption text',
+                'hashtags': '#MondayMotivation,#NewWeek,#GoalSetting'
             },
             {
                 'day': 'Wednesday',
                 'post_type': 'Carousel',
                 'caption_theme': 'Tips and Tricks',
-                'hashtags': ['#WednesdayWisdom', '#TipsAndTricks', '#LearnSomethingNew']
+                'caption_text': 'Default caption text',
+                'hashtags': '#WednesdayWisdom,#TipsAndTricks,#LearnSomethingNew'
             },
             {
                 'day': 'Friday',
                 'post_type': 'Reel',
                 'caption_theme': 'Fun Friday',
-                'hashtags': ['#FridayFun', '#WeekendVibes', '#HappyFriday']
-            },
-            {
-                'day': 'Sunday',
-                'post_type': 'IGTV',
-                'caption_theme': 'Weekly Recap',
-                'hashtags': ['#SundayThoughts', '#WeeklyRecap', '#NewWeekNewGoals']
+                'caption_text': 'Default caption text',
+                'hashtags': '#FridayFun,#WeekendVibes,#HappyFriday'
             }
         ]
 
