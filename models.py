@@ -1,28 +1,56 @@
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, timedelta
 import json
 import logging
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime, timedelta
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
 db = SQLAlchemy()
 
 def clean_json_string(json_str):
     if not json_str:
         return '[]'
     try:
-        # Handle case where input is already a list
+        # If it's already a list, convert it to JSON string
         if isinstance(json_str, list):
-            return json.dumps(json_str)
-        # Handle string input
+            # If elements are JSON strings, parse them first
+            cleaned_list = []
+            for item in json_str:
+                if isinstance(item, str):
+                    try:
+                        # Try to parse any JSON string items
+                        parsed_item = json.loads(item)
+                        cleaned_list.append(parsed_item)
+                    except json.JSONDecodeError:
+                        # If not JSON, use the string as is
+                        cleaned_list.append(item)
+                else:
+                    cleaned_list.append(item)
+            return json.dumps(cleaned_list)
+
+        # If it's a string, try to parse it
         if isinstance(json_str, str):
-            # Try to parse as JSON first
             try:
+                # First try to parse it as JSON
                 parsed = json.loads(json_str)
-                return json.dumps(parsed if isinstance(parsed, list) else [parsed])
+                if isinstance(parsed, list):
+                    # If it's a list of JSON strings, parse each item
+                    cleaned_list = []
+                    for item in parsed:
+                        if isinstance(item, str):
+                            try:
+                                cleaned_list.append(json.loads(item))
+                            except json.JSONDecodeError:
+                                cleaned_list.append(item)
+                        else:
+                            cleaned_list.append(item)
+                    return json.dumps(cleaned_list)
+                return json.dumps([parsed] if not isinstance(parsed, list) else parsed)
             except json.JSONDecodeError:
                 # If not valid JSON, treat as a single string
                 return json.dumps([json_str])

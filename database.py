@@ -39,6 +39,17 @@ def get_cached_profile(username):
         print(f"No profile found for {username}")
     return None
 
+def clean_json_string(data):
+    if isinstance(data, str):
+        try:
+            return json.loads(data)
+        except json.JSONDecodeError:
+            return [data]
+    elif not isinstance(data, list):
+        return []
+    else:
+        return data
+
 def cache_profile(profile_data):
     from flask import current_app
     from models import InstagramProfile, SimilarAccount
@@ -52,6 +63,9 @@ def cache_profile(profile_data):
         for key, value in profile_data.items():
             if key == 'top_hashtags':
                 setattr(profile, key, json.dumps(value))
+            elif key == 'post_texts':
+                # Ensure post_texts is properly formatted
+                setattr(profile, key, clean_json_string(value))
             elif key != 'similar_accounts' and hasattr(profile, key):
                 setattr(profile, key, value)
         profile.last_updated = datetime.utcnow()
@@ -60,15 +74,7 @@ def cache_profile(profile_data):
         # Create new profile
         # Clean post texts before creating profile
         if 'post_texts' in profile_data:
-            post_texts = profile_data['post_texts']
-            if isinstance(post_texts, str):
-                try:
-                    post_texts = json.loads(post_texts)
-                except json.JSONDecodeError:
-                    post_texts = [post_texts]
-            elif not isinstance(post_texts, list):
-                post_texts = []
-            profile_data['post_texts'] = json.dumps(post_texts)
+            profile_data['post_texts'] = clean_json_string(profile_data['post_texts'])
 
         profile = InstagramProfile.from_api_response(profile_data)
         db.session.add(profile)
@@ -78,15 +84,8 @@ def cache_profile(profile_data):
 
     # Add new similar accounts
     for account_data in profile_data.get('similar_accounts', []):
-        # Clean and store post texts as array
-        post_texts = account_data.get('post_texts', [])
-        if isinstance(post_texts, str):
-            try:
-                post_texts = json.loads(post_texts)
-            except json.JSONDecodeError:
-                post_texts = [post_texts]
-        elif not isinstance(post_texts, list):
-            post_texts = []
+        # Clean and store post texts
+        post_texts = clean_json_string(account_data.get('post_texts', []))
 
         similar_account = SimilarAccount(
             username=account_data['username'],
@@ -95,7 +94,7 @@ def cache_profile(profile_data):
             followers=account_data.get('followers', 0),
             engagement_rate=account_data.get('engagement_rate', 0.0),
             top_hashtags=json.dumps(account_data.get('top_hashtags', [])),
-            post_texts=json.dumps(post_texts),
+            post_texts=post_texts,
             profile=profile
         )
         db.session.add(similar_account)

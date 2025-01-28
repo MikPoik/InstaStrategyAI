@@ -16,7 +16,14 @@ def get_formatted_post_texts(post_texts):
         # If it's already a list, return it
         if isinstance(post_texts, list):
             print("List")
-            return post_texts
+            #print(post_texts[0])
+            post_array =  post_texts[0][1:-1] 
+            print("TEXT inner array\n")
+            print(post_array)
+            list_posts_texts = json.loads(post_array)
+            print("JSON_LOADED")
+            print(list_posts_texts)
+            return post_array
 
         # If it's a string, try to parse it
         if isinstance(post_texts, str):
@@ -40,19 +47,21 @@ def get_formatted_post_texts(post_texts):
 
         
 def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
-    print(profile_data.get('post_texts', []))
     post_texts = get_formatted_post_texts(profile_data.get('post_texts', []))
     print(post_texts)
+
     # Safely get sample post texts
     sample_texts = ""
     if len(post_texts) > 0:
-        sample_texts = "\n    Recent post sample texts:"
-        for i in range(min(2, len(post_texts))):
+        print(len(post_texts))
+        sample_texts = ""
+        sampled_indices = random.sample(range(len(post_texts)), min(2, len(post_texts)))
+        for i in sampled_indices:
             text = post_texts[i]
             if isinstance(text, str):
                 text = text.split('","')[0].replace('{"', "") if '","' in text else text
                 sample_texts += f"\n    > {text}"
-    
+    return None
     prompt = f"""
     # Generate a content plan for an Instagram account with the following details:
     - Username: {profile_data['username']}
@@ -61,25 +70,40 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
     - Followers: {profile_data['followers']}
     - Focus area: {focus_area}
     - Top hashtags: {', '.join(profile_data['top_hashtags'])}
-    - Engagement rate: {profile_data['engagement_rate']:.2f}%{sample_texts}
-
+    - Engagement rate: {profile_data['engagement_rate']:.2f}%
     
+    <SampleText>
+    {sample_texts}
+    </SampleText>
 
     ## Create a 7-day posting plan with the following structure:
     1. Day of the week (e.g., Monday, Tuesday, etc.)
     2. Post type (Image, Carousel, Reel)
     3. Caption theme and Title
-    4. Caption text content
+    4. Caption text content,verbose.
     4. Relevant hashtags (3-5)
 
     Use clear and direct language, avoid complex terminology. Aim for a Flesch reading score of 80 or higher. Use active language. Avoid adverbs. Avoid buzzwords and instead use simple language. Use professional jargon when necessary. Avoid a salesy or overly enthusiastic tone and instead convey calm confidence.
 
-    Write an engaging Instagram post on each topic. Analyze my writing style from examples and simulate it. Use a structure that is 50% creative and 50% persuasive, and emphasize important points in a Spartan manner.
-Important!! Remember to use low complexity and make the text human-like.
+    Write an engaging and unique Instagram post on each topic. Analyze my writing style from examples and simulate. Use a structure that is 50% creative and 50% persuasive, and emphasize important points in a Spartan manner.
+    Important!! Remember to use low complexity and make the text human-like.
 
-    Kirjoita Postauksien sisältö ja otsikko _SUOMEKSI_
+    Kirjoita Postauksien sisältö ja otsikko _SUOMEKSI_ käyttäen n. 200-250 sanaa.
 
     Provide the response in JSON format, with each post as a dictionary containing 'day', 'post_type', 'caption_theme','caption_text' and 'hashtags' keys.
+    format example:
+    {{
+        "posts": [
+            {{
+                "day": "",
+                "post_type": "",
+                "caption_theme": "",
+                "caption_text": "",
+                "hashtags": ["#hashtag", "#hashtag", "#hashtag"]
+            }},
+            ...
+            ]
+    }}
     """
     print(prompt)
     response = send_openai_request(prompt)
@@ -106,7 +130,7 @@ Important!! Remember to use low complexity and make the text human-like.
                 'post_type': post.get('post_type', ''),
                 'caption_theme': post.get('caption_theme', ''),
                 'caption_text': post.get('caption_text', ''),
-                'hashtags': post.get('hashtags', [])
+                'hashtags': ','.join(post.get('hashtags', []))
             }
             
             if all(formatted_post.values()):
