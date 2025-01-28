@@ -61,11 +61,13 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
     
     # Check cache first if not forcing refresh
     if not force_refresh:
+        print("LOAD CACHED PROFILE")
         cached_data = get_cached_profile(username)
+        print(cached_data)
         if cached_data:
             logger.info(f'Retrieved cached data for {username}')
             return cached_data
-    
+
     try:
         # Initialize HikerAPI client
         client = Client(HIKERAPI_TOKEN)
@@ -101,9 +103,11 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
             try:
                 # Extract hashtags from caption
                 if post.get('caption_text'):
-                    caption_text = post['caption_text']
-                    post_texts.append(caption_text.split("#")[0])
-                    logger.info(f"Caption text: {caption_text}")
+                    caption_text = post['caption_text']                    
+                    clean_text = caption_text.split("#")[0].strip()
+                    if clean_text:
+                        post_texts.append(clean_text)
+                    #logger.info(f"Caption text: {caption_text}")
                     # Extract hashtags from caption text
                     post_hashtags = [word[1:] for word in caption_text.split() if word.startswith('#')]
                     hashtags.extend(post_hashtags)
@@ -159,7 +163,7 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
                                 for post in similar_posts:
                                     if post.get('caption_text'):
                                         caption_text = post['caption_text']
-                                        similar_post_texts.append(caption_text.split("#")[0])  # Store text before hashtags
+                                        similar_post_texts.append(caption_text.split("#")[0].strip())  # Store text before hashtags
                                         post_hashtags = [word[1:] for word in caption_text.split() if word.startswith('#')]
                                         similar_hashtags.extend(post_hashtags)
                                 
@@ -186,6 +190,7 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
             similar_accounts = []
         
         logger.info("Analysis complete")
+        
         profile_data = {
             'username': user_info['username'],
             'full_name': user_info.get('full_name', ''),

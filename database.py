@@ -24,8 +24,10 @@ def get_cached_profile(username):
         raise RuntimeError("No Flask application context")
         
     profile = InstagramProfile.query.filter_by(username=username).first()
+    print(profile)
     
     if profile and profile.cache_valid_until and profile.cache_valid_until > datetime.utcnow():
+        print(f"Using cached profile for {username}")
         return profile.to_dict()
     return None
 
@@ -58,7 +60,7 @@ def cache_profile(profile_data):
     for account_data in profile_data.get('similar_accounts', []):
         # Clean and encode post texts properly
         post_texts = account_data.get('post_texts', [])
-        cleaned_post_texts = [text.strip() if isinstance(text, str) else str(text) for text in post_texts]
+        cleaned_post_texts = json.dumps(post_texts) if isinstance(post_texts, list) else '[]'
         
         similar_account = SimilarAccount(
             username=account_data['username'],

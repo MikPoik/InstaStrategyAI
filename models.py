@@ -10,6 +10,27 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 db = SQLAlchemy()
 
+def clean_json_string(json_str):
+    if not json_str:
+        return '[]'
+    try:
+        # Handle case where input is already a list
+        if isinstance(json_str, list):
+            return json.dumps(json_str)
+        # Handle string input
+        if isinstance(json_str, str):
+            # Try to parse as JSON first
+            try:
+                parsed = json.loads(json_str)
+                return json.dumps(parsed if isinstance(parsed, list) else [parsed])
+            except json.JSONDecodeError:
+                # If not valid JSON, treat as a single string
+                return json.dumps([json_str])
+        return '[]'
+    except Exception as e:
+        logger.error(f"Error cleaning JSON string: {e}")
+        return '[]'
+            
 class SimilarAccount(db.Model):
     __tablename__ = 'similar_accounts'
     
@@ -26,6 +47,7 @@ class SimilarAccount(db.Model):
     
     def to_dict(self):
         try:
+
             return {
                 'username': self.username,
                 'full_name': self.full_name,
@@ -33,7 +55,7 @@ class SimilarAccount(db.Model):
                 'followers': self.followers,
                 'engagement_rate': self.engagement_rate,
                 'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
-                'post_texts': json.loads(self.post_texts) if self.post_texts else []
+                'post_texts': json.loads(clean_json_string(self.post_texts)) if self.post_texts else []
             }
         except json.JSONDecodeError as e:
             print("Error in similar Account")
@@ -69,12 +91,13 @@ class InstagramProfile(db.Model):
     post_texts = db.Column(db.Text)  # Stored as JSON array of post texts
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
     cache_valid_until = db.Column(db.DateTime)
+    
 
+                
     def to_dict(self):
         try:
             # Get similar accounts from the relationship
             similar_accounts_list = [account.to_dict() for account in self.similar_accounts_data] if self.similar_accounts_data else []
-            
             return {
                 'username': self.username,
                 'full_name': self.full_name,
@@ -86,7 +109,7 @@ class InstagramProfile(db.Model):
                 'engagement_rate': self.engagement_rate,
                 'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
                 'similar_accounts': similar_accounts_list,
-                #'post_texts': json.loads(self.post_texts) if self.post_texts else []
+                'post_texts': json.loads(clean_json_string(self.post_texts)) if self.post_texts else []
             }
         except json.JSONDecodeError as e:
             print("Error in InstagramProfile")

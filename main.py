@@ -44,7 +44,7 @@ if username and focus_area:
 
     with st.spinner("Analyzing profile..."):
         with app.app_context():
-            profile_data = analyze_instagram_profile(username)
+            profile_data = analyze_instagram_profile(username,False)
     
     # Capture the log output
     log_contents = log_capture_string.getvalue()
@@ -67,12 +67,12 @@ if username and focus_area:
         st.plotly_chart(engagement_chart)
         
         st.header("Content Posting Plan")
-        #content_plan = generate_content_plan(profile_data, focus_area)
-        #st.table(pd.DataFrame(content_plan))
+        content_plan = generate_content_plan(profile_data, focus_area)
+        st.table(pd.DataFrame(content_plan))
         
         st.subheader("Posting Schedule")
-        #schedule_chart = create_posting_schedule_chart(content_plan)
-        #st.plotly_chart(schedule_chart)
+        schedule_chart = create_posting_schedule_chart(content_plan)
+        st.plotly_chart(schedule_chart)
         
         st.header("Similar Accounts")
         similar_accounts = profile_data.get('similar_accounts', [])
@@ -91,8 +91,7 @@ if username and focus_area:
                             st.write(f"Followers: {account.get('followers', 0):,}")
                             st.write(f"Engagement Rate: {account.get('engagement_rate', 0):.2f}%")
                             if account.get('top_hashtags'):
-                                st.write("Top Hashtags:")
-                                st.write(", ".join(account['top_hashtags'][:5]))
+                                st.write(f"Top Hashtags: {', '.join(account['top_hashtags'][:5])}")
                         st.markdown("---")
         else:
             st.info("No similar accounts found")
