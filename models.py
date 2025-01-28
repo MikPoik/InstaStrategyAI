@@ -47,7 +47,6 @@ class SimilarAccount(db.Model):
     
     def to_dict(self):
         try:
-
             return {
                 'username': self.username,
                 'full_name': self.full_name,
@@ -72,7 +71,7 @@ class SimilarAccount(db.Model):
                 'top_hashtags': [],
                 'post_texts': []
             }
-
+            
 class InstagramProfile(db.Model):
     __tablename__ = 'instagram_profiles'
     similar_accounts_data = db.relationship('SimilarAccount', backref='profile', lazy=True)
@@ -93,27 +92,10 @@ class InstagramProfile(db.Model):
     cache_valid_until = db.Column(db.DateTime)
 
     def to_dict(self):
-        return {
-            'username': self.username,
-            'full_name': self.full_name,
-            'biography': self.biography,
-            'category': self.category,
-            'followers': self.followers,
-            'following': self.following,
-            'posts': self.posts_count,
-            'engagement_rate': self.engagement_rate,
-            'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
-            'similar_accounts': json.loads(self.similar_accounts) if self.similar_accounts else [],
-            'post_texts': json.loads(self.post_texts) if self.post_texts else []
-        }
-    
-
-                
-    def to_dict(self):
         try:
             # Get similar accounts from the relationship
             similar_accounts_list = [account.to_dict() for account in self.similar_accounts_data] if self.similar_accounts_data else []
-            
+
             # Handle post_texts as array
             try:
                 if self.post_texts:
@@ -125,8 +107,9 @@ class InstagramProfile(db.Model):
                 else:
                     post_texts = []
             except json.JSONDecodeError:
+                logger.error(f"Error decoding post_texts for profile {self.username}")
                 post_texts = []
-                
+
             return {
                 'username': self.username,
                 'full_name': self.full_name,
@@ -141,11 +124,10 @@ class InstagramProfile(db.Model):
                 'post_texts': post_texts
             }
         except json.JSONDecodeError as e:
-            print("Error in InstagramProfile")
-            print(f"JSON Data - top_hashtags: {self.top_hashtags}")
-            print(f"JSON Data - similar_accounts: {self.similar_accounts}")
-            #print(f"JSON Data - post_texts: {self.post_texts}")
             logger.error(f"JSON decode error for profile {self.username}: {str(e)}")
+            logger.error(f"JSON Data - top_hashtags: {self.top_hashtags}")
+            logger.error(f"JSON Data - similar_accounts: {self.similar_accounts}")
+            logger.error(f"JSON Data - post_texts: {self.post_texts}")
             return {
                 'username': self.username,
                 'full_name': self.full_name,
