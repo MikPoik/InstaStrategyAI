@@ -173,8 +173,7 @@ class InstagramProfile(db.Model):
             engagement_rate=data['engagement_rate'],
             top_hashtags=json.dumps(data['top_hashtags']),
             similar_accounts=json.dumps(data['similar_accounts']),
-            post_texts=json.dumps(data.get('post_texts', [])),
+            post_texts=json.dumps(data.get('post_texts', []) if isinstance(data.get('post_texts', []), list) else []),
             cache_valid_until=datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) + 
-                            timedelta(days=1),
-            post_texts=json.dumps(data.get('post_texts', []) if isinstance(data.get('post_texts', []), list) else [])
+                            timedelta(days=1)
         )

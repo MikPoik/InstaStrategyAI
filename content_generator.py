@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def get_formatted_post_texts(post_texts):
     if not post_texts:
-        print(f"No post texts found for profile {profile.username}")
+        print("No post texts found for profile")
         return []
 
     try:
@@ -43,7 +43,6 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
     print(profile_data.get('post_texts', []))
     post_texts = get_formatted_post_texts(profile_data.get('post_texts', []))
     print(post_texts)
-    return []
     # Safely get sample post texts
     sample_texts = ""
     if len(post_texts) > 0:

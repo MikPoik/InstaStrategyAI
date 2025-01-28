@@ -44,36 +44,39 @@ if username and focus_area:
 
     with st.spinner("Analyzing profile..."):
         with app.app_context():
-            profile_data = analyze_instagram_profile(username,False)
-    
+            profile_data = analyze_instagram_profile(username, False)
+
     # Capture the log output
     log_contents = log_capture_string.getvalue()
-    
+
     if 'error' in profile_data:
         st.error(f"Error: {profile_data['error']}")
-        st.info("If you're experiencing rate limiting issues, please try again in a few minutes.")
+        st.info(
+            "If you're experiencing rate limiting issues, please try again in a few minutes."
+        )
     elif profile_data:
         st.header(f"Profile Analysis: {profile_data['username']}")
         col1, col2, col3 = st.columns(3)
         col1.metric("Followers", profile_data['followers'])
         col2.metric("Following", profile_data['following'])
         col3.metric("Posts", profile_data['posts'])
-        
+
         st.subheader("Top Hashtags")
         st.write(", ".join(profile_data['top_hashtags']))
-        
+
         st.subheader("Engagement Rate")
-        engagement_chart = create_engagement_chart(profile_data['engagement_rate'])
+        engagement_chart = create_engagement_chart(
+            profile_data['engagement_rate'])
         st.plotly_chart(engagement_chart)
-        
+
         st.header("Content Posting Plan")
         content_plan = generate_content_plan(profile_data, focus_area)
         st.table(pd.DataFrame(content_plan))
-        
+
         st.subheader("Posting Schedule")
         schedule_chart = create_posting_schedule_chart(content_plan)
         st.plotly_chart(schedule_chart)
-        
+
         st.header("Similar Accounts")
         similar_accounts = profile_data.get('similar_accounts', [])
 
@@ -85,24 +88,38 @@ if username and focus_area:
                         col1, col2 = st.columns(2)
                         with col1:
                             st.subheader(account.get('username', 'N/A'))
-                            st.write(f"Category: {account.get('category', 'N/A')}")
-                            st.write(f"Full Name: {account.get('full_name', 'N/A')}")
+                            st.write(
+                                f"Category: {account.get('category', 'N/A')}")
+                            st.write(
+                                f"Full Name: {account.get('full_name', 'N/A')}"
+                            )
                         with col2:
-                            st.write(f"Followers: {account.get('followers', 0):,}")
-                            st.write(f"Engagement Rate: {account.get('engagement_rate', 0):.2f}%")
+                            st.write(
+                                f"Followers: {account.get('followers', 0):,}")
+                            st.write(
+                                f"Engagement Rate: {account.get('engagement_rate', 0):.2f}%"
+                            )
                             if account.get('top_hashtags'):
-                                st.write(f"Top Hashtags: {', '.join(account['top_hashtags'][:5])}")
+                                st.write(
+                                    f"Top Hashtags: {', '.join(account['top_hashtags'][:5])}"
+                                )
                         st.markdown("---")
         else:
             st.info("No similar accounts found")
-        
+
         # Display logs in an expander
         with st.expander("View Analysis Logs"):
             st.text(log_contents)
     else:
-        st.error("Unable to fetch profile data. Please check the username and try again.")
+        st.error(
+            "Unable to fetch profile data. Please check the username and try again."
+        )
 else:
-    st.info("Please enter an Instagram username and content focus area to get started.")
+    st.info(
+        "Please enter an Instagram username and content focus area to get started."
+    )
 
 st.sidebar.markdown("---")
-st.sidebar.info("This app analyzes Instagram profiles and provides marketing recommendations. It does not store any personal data or require authentication. Instagram login credentials are securely managed through environment variables.")
+st.sidebar.info(
+    "This app analyzes Instagram profiles and provides marketing recommendations. It does not store any personal data or require authentication. Instagram login credentials are securely managed through environment variables."
+)
