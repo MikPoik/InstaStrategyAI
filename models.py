@@ -113,6 +113,20 @@ class InstagramProfile(db.Model):
         try:
             # Get similar accounts from the relationship
             similar_accounts_list = [account.to_dict() for account in self.similar_accounts_data] if self.similar_accounts_data else []
+            
+            # Handle post_texts as array
+            try:
+                if self.post_texts:
+                    post_texts = json.loads(self.post_texts)
+                    if isinstance(post_texts, str):
+                        post_texts = json.loads(post_texts)
+                    if not isinstance(post_texts, list):
+                        post_texts = [post_texts] if post_texts else []
+                else:
+                    post_texts = []
+            except json.JSONDecodeError:
+                post_texts = []
+                
             return {
                 'username': self.username,
                 'full_name': self.full_name,
@@ -124,7 +138,7 @@ class InstagramProfile(db.Model):
                 'engagement_rate': self.engagement_rate,
                 'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
                 'similar_accounts': similar_accounts_list,
-                'post_texts': json.loads(clean_json_string(self.post_texts)) if self.post_texts else []
+                'post_texts': post_texts
             }
         except json.JSONDecodeError as e:
             print("Error in InstagramProfile")
