@@ -30,10 +30,10 @@ def clean_json_string(json_str):
     except Exception as e:
         logger.error(f"Error cleaning JSON string: {e}")
         return '[]'
-            
+
 class SimilarAccount(db.Model):
     __tablename__ = 'similar_accounts'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), nullable=False)
     full_name = db.Column(db.String(255))
@@ -44,7 +44,7 @@ class SimilarAccount(db.Model):
     post_texts = db.Column(db.Text)  # Stored as JSON array of post texts
     profile_id = db.Column(db.Integer, db.ForeignKey('instagram_profiles.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
+
     def to_dict(self):
         try:
             return {
@@ -57,11 +57,9 @@ class SimilarAccount(db.Model):
                 'post_texts': json.loads(clean_json_string(self.post_texts)) if self.post_texts else []
             }
         except json.JSONDecodeError as e:
-            print("Error in similar Account")
-            print(f"JSON decode error for profile {self.username}: {str(e)}")
-            print(f"JSON Data - top_hashtags: {self.top_hashtags}")
-            #print(f"JSON Data - post_texts: {self.post_texts}")
-            logger.error(f"JSON decode error for similar account {self.username}")
+            logger.error(f"JSON decode error for similar account {self.username}: {str(e)}")
+            logger.error(f"JSON Data - top_hashtags: {self.top_hashtags}")
+            logger.error(f"JSON Data - post_texts: {self.post_texts}")
             return {
                 'username': self.username,
                 'full_name': self.full_name,
@@ -71,11 +69,11 @@ class SimilarAccount(db.Model):
                 'top_hashtags': [],
                 'post_texts': []
             }
-            
+
 class InstagramProfile(db.Model):
     __tablename__ = 'instagram_profiles'
     similar_accounts_data = db.relationship('SimilarAccount', backref='profile', lazy=True)
-    
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), unique=True, nullable=False)
     full_name = db.Column(db.String(255))
@@ -96,18 +94,13 @@ class InstagramProfile(db.Model):
             # Get similar accounts from the relationship
             similar_accounts_list = [account.to_dict() for account in self.similar_accounts_data] if self.similar_accounts_data else []
 
-            # Handle post_texts as array
+            # Handle post_texts with clean_json_string
             try:
-                if self.post_texts:
-                    post_texts = json.loads(self.post_texts)
-                    if isinstance(post_texts, str):
-                        post_texts = json.loads(post_texts)
-                    if not isinstance(post_texts, list):
-                        post_texts = [post_texts] if post_texts else []
-                else:
-                    post_texts = []
-            except json.JSONDecodeError:
-                logger.error(f"Error decoding post_texts for profile {self.username}")
+                post_texts = json.loads(clean_json_string(self.post_texts)) if self.post_texts else []
+                logger.info(f"Successfully parsed post_texts for {self.username}: {len(post_texts)} posts")
+            except Exception as e:
+                logger.error(f"Error parsing post_texts for {self.username}: {str(e)}")
+                logger.error(f"Raw post_texts: {self.post_texts[:100]}...")  # Log first 100 chars
                 post_texts = []
 
             return {
@@ -155,7 +148,7 @@ class InstagramProfile(db.Model):
             engagement_rate=data['engagement_rate'],
             top_hashtags=json.dumps(data['top_hashtags']),
             similar_accounts=json.dumps(data['similar_accounts']),
-            post_texts=json.dumps(data.get('post_texts', []) if isinstance(data.get('post_texts', []), list) else []),
+            post_texts=clean_json_string(data.get('post_texts', [])),
             cache_valid_until=datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) + 
                             timedelta(days=1)
         )
