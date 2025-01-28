@@ -37,7 +37,8 @@ def get_formatted_post_texts(post_texts):
 
         
 def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
-
+    post_texts = get_formatted_post_texts(profile_data.get('post_texts', []))
+    print(post_texts)
     prompt = f"""
     # Generate a content plan for an Instagram account with the following details:
     - Username: {profile_data['username']}
