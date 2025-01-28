@@ -13,47 +13,26 @@ logger.addHandler(handler)
 db = SQLAlchemy()
 
 def clean_json_string(json_str):
+    """
+    Clean and normalize JSON string for reading from database
+    """
     if not json_str:
         return '[]'
     try:
-        # If it's already a list, convert it to JSON string
-        if isinstance(json_str, list):
-            # If elements are JSON strings, parse them first
-            cleaned_list = []
-            for item in json_str:
-                if isinstance(item, str):
-                    try:
-                        # Try to parse any JSON string items
-                        parsed_item = json.loads(item)
-                        cleaned_list.append(parsed_item)
-                    except json.JSONDecodeError:
-                        # If not JSON, use the string as is
-                        cleaned_list.append(item)
-                else:
-                    cleaned_list.append(item)
-            return json.dumps(cleaned_list)
-
-        # If it's a string, try to parse it
+        # Handle string input
         if isinstance(json_str, str):
             try:
-                # First try to parse it as JSON
+                # Parse as JSON
                 parsed = json.loads(json_str)
                 if isinstance(parsed, list):
-                    # If it's a list of JSON strings, parse each item
-                    cleaned_list = []
-                    for item in parsed:
-                        if isinstance(item, str):
-                            try:
-                                cleaned_list.append(json.loads(item))
-                            except json.JSONDecodeError:
-                                cleaned_list.append(item)
-                        else:
-                            cleaned_list.append(item)
-                    return json.dumps(cleaned_list)
-                return json.dumps([parsed] if not isinstance(parsed, list) else parsed)
+                    return json.dumps(parsed)
+                return json.dumps([parsed])
             except json.JSONDecodeError:
-                # If not valid JSON, treat as a single string
+                # If not valid JSON, treat as single string
                 return json.dumps([json_str])
+        # Handle list input
+        elif isinstance(json_str, list):
+            return json.dumps(json_str)
         return '[]'
     except Exception as e:
         logger.error(f"Error cleaning JSON string: {e}")
@@ -82,12 +61,11 @@ class SimilarAccount(db.Model):
                 'followers': self.followers,
                 'engagement_rate': self.engagement_rate,
                 'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
-                'post_texts': json.loads(clean_json_string(self.post_texts)) if self.post_texts else []
+                'post_texts': json.loads(self.post_texts) if self.post_texts else []
             }
         except json.JSONDecodeError as e:
             logger.error(f"JSON decode error for similar account {self.username}: {str(e)}")
-            logger.error(f"JSON Data - top_hashtags: {self.top_hashtags}")
-            logger.error(f"JSON Data - post_texts: {self.post_texts}")
+            logger.error(f"Raw post_texts: {self.post_texts[:100]}...")
             return {
                 'username': self.username,
                 'full_name': self.full_name,
@@ -122,15 +100,6 @@ class InstagramProfile(db.Model):
             # Get similar accounts from the relationship
             similar_accounts_list = [account.to_dict() for account in self.similar_accounts_data] if self.similar_accounts_data else []
 
-            # Handle post_texts with clean_json_string
-            try:
-                post_texts = json.loads(clean_json_string(self.post_texts)) if self.post_texts else []
-                logger.info(f"Successfully parsed post_texts for {self.username}: {len(post_texts)} posts")
-            except Exception as e:
-                logger.error(f"Error parsing post_texts for {self.username}: {str(e)}")
-                logger.error(f"Raw post_texts: {self.post_texts[:100]}...")  # Log first 100 chars
-                post_texts = []
-
             return {
                 'username': self.username,
                 'full_name': self.full_name,
@@ -142,13 +111,11 @@ class InstagramProfile(db.Model):
                 'engagement_rate': self.engagement_rate,
                 'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
                 'similar_accounts': similar_accounts_list,
-                'post_texts': post_texts
+                'post_texts': json.loads(self.post_texts) if self.post_texts else []
             }
         except json.JSONDecodeError as e:
             logger.error(f"JSON decode error for profile {self.username}: {str(e)}")
-            logger.error(f"JSON Data - top_hashtags: {self.top_hashtags}")
-            logger.error(f"JSON Data - similar_accounts: {self.similar_accounts}")
-            logger.error(f"JSON Data - post_texts: {self.post_texts}")
+            logger.error(f"Raw post_texts: {self.post_texts[:100]}...")
             return {
                 'username': self.username,
                 'full_name': self.full_name,
@@ -176,7 +143,7 @@ class InstagramProfile(db.Model):
             engagement_rate=data['engagement_rate'],
             top_hashtags=json.dumps(data['top_hashtags']),
             similar_accounts=json.dumps(data['similar_accounts']),
-            post_texts=clean_json_string(data.get('post_texts', [])),
+            post_texts=json.dumps(data.get('post_texts', [])),
             cache_valid_until=datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) + 
                             timedelta(days=1)
         )

@@ -16,14 +16,12 @@ def get_formatted_post_texts(post_texts):
         # If it's already a list, return it
         if isinstance(post_texts, list):
             print("List")
-            #print(post_texts[0])
-            post_array =  post_texts[0][1:-1] 
-            print("TEXT inner array\n")
-            print(post_array)
-            list_posts_texts = json.loads(post_array)
+            print(post_texts)
+
+            list_posts_texts = json.loads(post_texts[0])
             print("JSON_LOADED")
             print(list_posts_texts)
-            return post_array
+            return post_texts
 
         # If it's a string, try to parse it
         if isinstance(post_texts, str):
@@ -47,7 +45,8 @@ def get_formatted_post_texts(post_texts):
 
         
 def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
-    post_texts = get_formatted_post_texts(profile_data.get('post_texts', []))
+    texts_array = profile_data['post_texts'][0]
+    post_texts = json.loads(texts_array)#get_formatted_post_texts(profile_data.get('post_texts', []))
     print(post_texts)
 
     # Safely get sample post texts
@@ -61,7 +60,7 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
             if isinstance(text, str):
                 text = text.split('","')[0].replace('{"', "") if '","' in text else text
                 sample_texts += f"\n    > {text}"
-    return None
+    return []
     prompt = f"""
     # Generate a content plan for an Instagram account with the following details:
     - Username: {profile_data['username']}

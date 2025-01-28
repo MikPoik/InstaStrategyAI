@@ -7,6 +7,7 @@ from nltk.corpus import stopwords
 from typing import Dict, List
 
 from database import get_cached_profile, cache_profile
+
 nltk.download('stopwords', quiet=True)
 
 # Set up logger
@@ -58,7 +59,7 @@ def get_medias(client, user_id, max_amount=None):
     return list(medias.values())
 def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dict:
     logger.info(f'Analyzing Instagram profile for username: {username}')
-    
+
     # Check cache first if not forcing refresh
     if not force_refresh:
         print("LOAD CACHED PROFILE")
@@ -71,7 +72,7 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
     try:
         # Initialize HikerAPI client
         client = Client(HIKERAPI_TOKEN)
-        
+
         # Fetch user profile information
         logger.info("Fetching profile information")
         profile = client.user_by_username_v2(username)
@@ -79,7 +80,7 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
         if 'user' not in profile:
             logger.error(f"Profile does not exist: {username}")
             return {'error': 'Profile does not exist'}
-            
+        
         user_info = profile['user']
         full_name = user_info['full_name']
         biography = user_info['biography']
@@ -95,7 +96,7 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
         likes = []
         comments = []
         post_texts = []
-        
+
         # Analyze posts
         logger.info("Analyzing posts")
         for i, post in enumerate(posts):
@@ -106,21 +107,16 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
                     caption_text = post['caption_text']                    
                     clean_text = caption_text.split("#")[0].strip()
                     if clean_text:
-                        post_texts.append(clean_text)
-                    #logger.info(f"Caption text: {caption_text}")
-                    # Extract hashtags from caption text
+                        post_texts.append(clean_text)  # Store clean text directly
                     post_hashtags = [word[1:] for word in caption_text.split() if word.startswith('#')]
                     hashtags.extend(post_hashtags)
-                
-                # Get likes and comments count
+
                 likes.append(post.get('like_count', 0))
-                logger.info(f"Likes for post {i+1}: {post.get('like_count', 0)}")
                 comments.append(post.get('comment_count', 0))
-                logger.info(f"Comments for post {i+1}: {post.get('comment_count'), 0}")
-                
+
             except Exception as e:
                 logger.error(f"Error processing post {i+1}: {str(e)}")
-        
+
         # Calculate metrics
         logger.info("Calculating top hashtags")
         top_hashtags = [tag for tag, _ in Counter(hashtags).most_common(5)]
@@ -146,29 +142,29 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
                             similar_profile = client.user_by_username_v2(user['username'])
                             if 'user' in similar_profile:
                                 similar_user = similar_profile['user']
-                                
-                                # Get posts to calculate engagement rate for similar account
+
                                 similar_posts = get_medias(client, similar_user['pk'], max_amount=5)
                                 similar_likes = [post.get('like_count', 0) for post in similar_posts]
                                 similar_comments = [post.get('comment_count', 0) for post in similar_posts]
-                                
+
                                 similar_avg_likes = sum(similar_likes) / len(similar_likes) if similar_likes else 0
                                 similar_avg_comments = sum(similar_comments) / len(similar_comments) if similar_comments else 0
                                 similar_followers_count = similar_user.get('follower_count', 0)
                                 similar_engagement_rate = (similar_avg_likes + similar_avg_comments) / similar_followers_count * 100 if similar_followers_count else 0
-                                
-                                # Extract hashtags from similar account posts
+
                                 similar_hashtags = []
                                 similar_post_texts = []
                                 for post in similar_posts:
                                     if post.get('caption_text'):
                                         caption_text = post['caption_text']
-                                        similar_post_texts.append(caption_text.split("#")[0].strip())  # Store text before hashtags
+                                        clean_text = caption_text.split("#")[0].strip()
+                                        if clean_text:
+                                            similar_post_texts.append(clean_text)  # Store clean text directly
                                         post_hashtags = [word[1:] for word in caption_text.split() if word.startswith('#')]
                                         similar_hashtags.extend(post_hashtags)
-                                
+
                                 similar_top_hashtags = [tag for tag, _ in Counter(similar_hashtags).most_common(5)]
-                                
+
                                 similar_account_data = {
                                     'username': similar_user['username'],
                                     'full_name': similar_user.get('full_name', ''),
@@ -176,10 +172,10 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
                                     'followers': similar_followers_count,
                                     'engagement_rate': similar_engagement_rate,
                                     'top_hashtags': similar_top_hashtags,
-                                    'post_texts': similar_post_texts
+                                    'post_texts': similar_post_texts  # Store as plain array
                                 }
                                 similar_accounts.append(similar_account_data)
-                                logger.info(f"Processed similar account: {similar_user['username']}")
+
                         except Exception as e:
                             logger.error(f"Error processing similar account {user['username']}: {str(e)}")
                             continue
@@ -202,7 +198,7 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
             'top_hashtags': top_hashtags,
             'engagement_rate': engagement_rate,
             'similar_accounts': similar_accounts,
-            'post_texts': post_texts
+            'post_texts': post_texts  # Store as plain array
         }
         
         # Cache the profile data
