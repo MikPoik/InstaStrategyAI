@@ -39,6 +39,17 @@ def get_formatted_post_texts(post_texts):
 def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
     post_texts = get_formatted_post_texts(profile_data.get('post_texts', []))
     print(post_texts)
+    
+    # Safely get sample post texts
+    sample_texts = ""
+    if len(post_texts) > 0:
+        sample_texts = "\n    Recent post sample texts:"
+        for i in range(min(2, len(post_texts))):
+            text = post_texts[i]
+            if isinstance(text, str):
+                text = text.split('","')[0].replace('{"', "") if '","' in text else text
+                sample_texts += f"\n    > {text}"
+    
     prompt = f"""
     # Generate a content plan for an Instagram account with the following details:
     - Username: {profile_data['username']}
@@ -47,10 +58,7 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
     - Followers: {profile_data['followers']}
     - Focus area: {focus_area}
     - Top hashtags: {', '.join(profile_data['top_hashtags'])}
-    - Engagement rate: {profile_data['engagement_rate']:.2f}%
-    - Recent post sample texts:
-    > {profile_data['post_texts'][0].split('","')[0].replace('{"',"")}
-    > {profile_data['post_texts'][1].split('","')[0].replace('{"',"")}
+    - Engagement rate: {profile_data['engagement_rate']:.2f}%{sample_texts}
 
     
 
