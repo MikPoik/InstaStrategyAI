@@ -91,6 +91,21 @@ class InstagramProfile(db.Model):
     post_texts = db.Column(db.Text)  # Stored as JSON array of post texts
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
     cache_valid_until = db.Column(db.DateTime)
+
+    def to_dict(self):
+        return {
+            'username': self.username,
+            'full_name': self.full_name,
+            'biography': self.biography,
+            'category': self.category,
+            'followers': self.followers,
+            'following': self.following,
+            'posts': self.posts_count,
+            'engagement_rate': self.engagement_rate,
+            'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
+            'similar_accounts': json.loads(self.similar_accounts) if self.similar_accounts else [],
+            'post_texts': json.loads(self.post_texts) if self.post_texts else []
+        }
     
 
                 

@@ -23,12 +23,20 @@ def get_cached_profile(username):
     if not current_app:
         raise RuntimeError("No Flask application context")
         
-    profile = InstagramProfile.query.filter_by(username=username).first()
-    print(profile)
+    profile = InstagramProfile.query.filter_by(username=username.lower()).first()
     
-    if profile and profile.cache_valid_until and profile.cache_valid_until > datetime.utcnow():
-        print(f"Using cached profile for {username}")
-        return profile.to_dict()
+    if profile:
+        print(f"Found profile for {username}")
+        print(f"Cache valid until: {profile.cache_valid_until}")
+        print(f"Current time: {datetime.utcnow()}")
+        
+        if profile.cache_valid_until and profile.cache_valid_until > datetime.utcnow():
+            print(f"Using cached profile for {username}")
+            return profile.to_dict()
+        else:
+            print("Cache expired")
+    else:
+        print(f"No profile found for {username}")
     return None
 
 def cache_profile(profile_data):
