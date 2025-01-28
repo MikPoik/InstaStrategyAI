@@ -1,6 +1,6 @@
 import os
 from flask_migrate import Migrate
-from models import db
+from models import db, PostText, SimilarAccountPostText
 from datetime import datetime, timedelta
 import json
 
@@ -39,23 +39,6 @@ def get_cached_profile(username):
         print(f"No profile found for {username}")
     return None
 
-def clean_json_string(data):
-    """
-    Clean and normalize data for database storage
-    """
-    if isinstance(data, str):
-        try:
-            # If it's a JSON string, parse it
-            return json.dumps(json.loads(data))
-        except json.JSONDecodeError:
-            # If it's a plain string, wrap it in array
-            return json.dumps([data])
-    elif isinstance(data, list):
-        # If it's already a list, just encode it
-        return json.dumps(data)
-    else:
-        return json.dumps([])
-
 def cache_profile(profile_data):
     from flask import current_app
     from models import InstagramProfile, SimilarAccount
@@ -64,22 +47,35 @@ def cache_profile(profile_data):
         raise RuntimeError("No Flask application context")
 
     profile = InstagramProfile.query.filter_by(username=profile_data['username']).first()
+
     if profile:
         # Update existing profile
         for key, value in profile_data.items():
             if key == 'top_hashtags':
                 setattr(profile, key, json.dumps(value))
-            elif key == 'post_texts':
-                # Store post_texts as a simple JSON array
-                setattr(profile, key, json.dumps(value))
-            elif key != 'similar_accounts' and hasattr(profile, key):
+            elif key not in ['similar_accounts', 'post_texts'] and hasattr(profile, key):
                 setattr(profile, key, value)
+
+        # Clear existing post texts
+        PostText.query.filter_by(profile_id=profile.id).delete()
+
+        # Add new post texts
+        for text in profile_data.get('post_texts', []):
+            post_text = PostText(text_content=text, profile=profile)
+            db.session.add(post_text)
+
         profile.last_updated = datetime.utcnow()
         profile.cache_valid_until = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
     else:
         # Create new profile
         profile = InstagramProfile.from_api_response(profile_data)
         db.session.add(profile)
+        db.session.flush()  # Flush to get the profile ID
+
+        # Add post texts
+        for text in profile_data.get('post_texts', []):
+            post_text = PostText(text_content=text, profile=profile)
+            db.session.add(post_text)
 
     # Clear existing similar accounts
     SimilarAccount.query.filter_by(profile_id=profile.id).delete()
@@ -93,9 +89,17 @@ def cache_profile(profile_data):
             followers=account_data.get('followers', 0),
             engagement_rate=account_data.get('engagement_rate', 0.0),
             top_hashtags=json.dumps(account_data.get('top_hashtags', [])),
-            post_texts=json.dumps(account_data.get('post_texts', [])),  # Store as JSON array
             profile=profile
         )
         db.session.add(similar_account)
+        db.session.flush()  # Flush to get the similar account ID
+
+        # Add post texts for similar account
+        for text in account_data.get('post_texts', []):
+            post_text = SimilarAccountPostText(
+                text_content=text,
+                similar_account=similar_account
+            )
+            db.session.add(post_text)
 
     db.session.commit()
