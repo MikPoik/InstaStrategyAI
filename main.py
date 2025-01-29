@@ -71,6 +71,7 @@ if username and focus_area:
 
         st.subheader("Strategy Recommendations")
         strategy_recommendations = get_strategy_recommendations(profile_data,focus_area)
+        print(strategy_recommendations)
         with st.expander("Suggestions", expanded=True):
             recommendations = strategy_recommendations.get('recommendations', []) if isinstance(strategy_recommendations, dict) else strategy_recommendations
             for recommendation in recommendations:

@@ -25,7 +25,7 @@ def get_strategy_recommendations(profile_data: Dict, focus_area: str) -> List[st
     """
     print(prompt)
     response = send_openai_request(prompt)
-    print(response)
+
     try:
         recommendations = json.loads(response)
         if isinstance(recommendations, list):
