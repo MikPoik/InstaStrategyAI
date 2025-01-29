@@ -9,13 +9,8 @@ from typing import Dict, List
 from database import get_cached_profile, cache_profile
 nltk.download('stopwords', quiet=True)
 
-# Set up logger
+# Get logger
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
 # Get HikerAPI token from environment
 HIKERAPI_TOKEN = os.getenv('HIKERAPI_TOKEN')
