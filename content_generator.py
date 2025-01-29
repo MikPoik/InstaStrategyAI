@@ -91,7 +91,7 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
                 'post_type': post.get('post_type', ''),
                 'caption_theme': post.get('caption_theme', ''),
                 'caption_text': post.get('caption_text', ''),
-                'hashtags': ','.join(post.get('hashtags', []))
+                'hashtags': '\n'.join(post.get('hashtags', []))
             }
             
             if all(formatted_post.values()):
