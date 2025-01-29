@@ -69,11 +69,12 @@ if username and focus_area:
             profile_data['engagement_rate'])
         st.plotly_chart(engagement_chart)
 
-        st.subheader("Stategy Recommendations")
+        st.subheader("Strategy Recommendations")
         strategy_recommendations = get_strategy_recommendations(profile_data,focus_area)
-        with st.expander("Suggestions",expanded=True):
-            for recommendation in strategy_recommendations:
-                st.write(f"- {recommendation}")
+        with st.expander("Suggestions", expanded=True):
+            recommendations = strategy_recommendations.get('recommendations', []) if isinstance(strategy_recommendations, dict) else strategy_recommendations
+            for recommendation in recommendations:
+                st.markdown(f"• {recommendation}")
     
         st.header("Content Posting Plan")
         content_plan = generate_content_plan(profile_data, focus_area)
