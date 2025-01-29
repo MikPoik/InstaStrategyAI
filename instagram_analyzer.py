@@ -122,7 +122,9 @@ def analyze_instagram_profile(username: str, force_refresh: bool = False) -> Dic
         followers_count = user_info.get('follower_count', 0)
         avg_likes = sum(likes) / len(likes) if likes else 0
         avg_comments = sum(comments) / len(comments) if comments else 0
-        engagement_rate = (avg_likes + avg_comments) / followers_count * 100 if followers_count else 0
+        # Calculate engagement rate per post then average
+        engagement_rates = [(likes[i] + comments[i]) / followers_count * 100 if followers_count else 0 for i in range(len(likes))]
+        engagement_rate = sum(engagement_rates) / len(engagement_rates) if engagement_rates else 0
 
         # Get similar accounts (suggested users)
         logger.info("Fetching similar accounts")
