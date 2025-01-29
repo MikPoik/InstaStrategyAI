@@ -71,12 +71,13 @@ if username and focus_area:
 
         st.subheader("Strategy Recommendations")
         strategy_recommendations = get_strategy_recommendations(profile_data,focus_area)
-        print(strategy_recommendations)
         with st.expander("Suggestions", expanded=True):
-            recommendations = strategy_recommendations.get('recommendations', []) if isinstance(strategy_recommendations, dict) else strategy_recommendations
-            for recommendation in recommendations:
-                st.markdown(f"• {recommendation}")
-    
+            # Extract recommendations from nested list structure
+            if strategy_recommendations and isinstance(strategy_recommendations[0], str):
+                recommendations = eval(strategy_recommendations[0])  # Safely evaluate string representation of list
+                for recommendation in recommendations:
+                    st.markdown(recommendation)
+
         st.header("Content Posting Plan")
         content_plan = generate_content_plan(profile_data, focus_area)
         st.table(pd.DataFrame(content_plan))
