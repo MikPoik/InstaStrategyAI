@@ -7,20 +7,20 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+        
 def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
-    # Get post texts directly from the profile data
-    # Now post_texts comes as a list of strings from the database relationship
-    post_texts = profile_data.get('post_texts', [])
-    logger.info(f"Retrieved {len(post_texts)} post texts")
+    post_texts = profile_data['post_texts']
+    print(post_texts[2])
 
     # Safely get sample post texts
     sample_texts = ""
-    if post_texts:
-        # Take up to 2 random samples if available
+    if len(post_texts) > 0:
+        sample_texts = ""
         sampled_indices = random.sample(range(len(post_texts)), min(2, len(post_texts)))
         for i in sampled_indices:
             text = post_texts[i]
             if isinstance(text, str):
+                text = text.split('","')[0].replace('{"', "") if '","' in text else text
                 sample_texts += f"\n    > {text}"
 
     prompt = f"""
@@ -32,10 +32,10 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
     - Focus area: {focus_area}
     - Top hashtags: {', '.join(profile_data['top_hashtags'])}
     - Engagement rate: {profile_data['engagement_rate']:.2f}%
-
-    <SampleText>
+    
+    <UserSampleText>
     {sample_texts}
-    </SampleText>
+    </UserSampleText>
 
     ## Create a 7-day posting plan with the following structure:
     1. Day of the week (e.g., Monday, Tuesday, etc.)
@@ -46,45 +46,46 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
 
     Use clear and direct language, avoid complex terminology. Aim for a Flesch reading score of 80 or higher. Use active language. Avoid adverbs. Avoid buzzwords and instead use simple language. Use professional jargon when necessary. Avoid a salesy or overly enthusiastic tone and instead convey calm confidence.
 
-    Write an engaging and unique Instagram post on each topic. Analyze my writing style from examples and simulate. Use a structure that is 50% creative and 50% persuasive, and emphasize important points in a Spartan manner.
+    Write an engaging and unique Instagram post on each topic. Analyze {profile_data['username']} writing style from samples and simulate the human writing style. Use a structure that is 50% creative and 50% persuasive, and emphasize important points in a Spartan manner.
     Important!! Remember to use low complexity and make the text human-like.
-
+    Tärkeää!! Muista käyttää alhaista monimutkaisuutta ja hämmennä teksi ihmismäiseksi.
     Kirjoita Postauksien sisältö ja otsikko _SUOMEKSI_ käyttäen n. 200-250 sanaa.
 
     Provide the response in JSON format, with each post as a dictionary containing 'day', 'post_type', 'caption_theme','caption_text' and 'hashtags' keys.
     format example:
-    {
+    {{
         "posts": [
-            {
+            {{
                 "day": "",
                 "post_type": "",
                 "caption_theme": "",
                 "caption_text": "",
                 "hashtags": ["#hashtag", "#hashtag", "#hashtag"]
-            },
+            }},
             ...
             ]
-    }
+    }}
     """
-    logger.info("Sending prompt to OpenAI")
+    print(prompt)
     response = send_openai_request(prompt)
-    logger.info("Received response from OpenAI")
+    print(response)
 
     try:
         content_plan = json.loads(response)
+        print(content_plan)
         if isinstance(content_plan, dict) and 'posts' in content_plan:
             content_plan = content_plan['posts']
         if isinstance(content_plan, dict):
             content_plan = [content_plan]
         elif not isinstance(content_plan, list):
             raise ValueError('Unexpected content plan format')
-
+        
         formatted_content_plan = []
         for post in content_plan:
             if not isinstance(post, dict):
                 logger.warning(f'Skipping invalid post: {post}')
                 continue
-
+            
             formatted_post = {
                 'day': post.get('day', ''),
                 'post_type': post.get('post_type', ''),
@@ -92,38 +93,42 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
                 'caption_text': post.get('caption_text', ''),
                 'hashtags': ','.join(post.get('hashtags', []))
             }
-
+            
             if all(formatted_post.values()):
                 formatted_content_plan.append(formatted_post)
-
+        
         if not formatted_content_plan:
             raise ValueError('No valid posts in the content plan')
 
     except (json.JSONDecodeError, ValueError) as e:
         logger.error(f'Error processing content plan: {str(e)}')
         logger.error(f'Received response: {response}')
+        print("Default plan")
         # Create a default content plan
         formatted_content_plan = [
             {
                 'day': 'Monday',
                 'post_type': 'Image',
                 'caption_theme': 'Motivational Monday',
-                'caption_text': 'Default caption text',
-                'hashtags': '#MondayMotivation,#NewWeek,#GoalSetting'
+                'hashtags': ['#MondayMotivation', '#NewWeek', '#GoalSetting']
             },
             {
                 'day': 'Wednesday',
                 'post_type': 'Carousel',
                 'caption_theme': 'Tips and Tricks',
-                'caption_text': 'Default caption text',
-                'hashtags': '#WednesdayWisdom,#TipsAndTricks,#LearnSomethingNew'
+                'hashtags': ['#WednesdayWisdom', '#TipsAndTricks', '#LearnSomethingNew']
             },
             {
                 'day': 'Friday',
                 'post_type': 'Reel',
                 'caption_theme': 'Fun Friday',
-                'caption_text': 'Default caption text',
-                'hashtags': '#FridayFun,#WeekendVibes,#HappyFriday'
+                'hashtags': ['#FridayFun', '#WeekendVibes', '#HappyFriday']
+            },
+            {
+                'day': 'Sunday',
+                'post_type': 'IGTV',
+                'caption_theme': 'Weekly Recap',
+                'hashtags': ['#SundayThoughts', '#WeeklyRecap', '#NewWeekNewGoals']
             }
         ]
 
