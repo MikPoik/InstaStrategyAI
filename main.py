@@ -72,7 +72,8 @@ if username and focus_area:
         st.subheader("Stategy Recommendations")
         strategy_recommendations = get_strategy_recommendations(profile_data,focus_area)
         with st.expander("Suggestions",expanded=True):
-            st.write("\n".join(strategy_recommendations))
+            for recommendation in strategy_recommendations:
+                st.write(f"- {recommendation}")
     
         st.header("Content Posting Plan")
         content_plan = generate_content_plan(profile_data, focus_area)

@@ -27,6 +27,7 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
     # Generate a content plan for an Instagram account with the following details:
     - Username: {profile_data['username']}
     - Full Name: {profile_data['full_name']}
+    - Biography: {profile_data['biography']}
     - Category: {profile_data['category']}
     - Followers: {profile_data['followers']}
     - Focus area: {focus_area}

@@ -9,8 +9,13 @@ def get_strategy_recommendations(profile_data: Dict, focus_area: str) -> List[st
     prompt = f"""
     Provide strategic recommendations for an Instagram account with the following details:
     - Username: {profile_data['username']}
+    - Full Name: {profile_data['full_name']}
+    - Biography: {profile_data['biography']}
+    - Category: {profile_data['category']}
     - Followers: {profile_data['followers']}
     - Posts: {profile_data['posts']}
+    - Average likes per post: {profile_data['avg_likes']}
+    - Average comments per post: {profile_data['avg_comments']}
     - Engagement rate: {profile_data['engagement_rate']:.2f}%
     - Top hashtags: {', '.join(profile_data['top_hashtags'])}
     - Focus area: {focus_area}
