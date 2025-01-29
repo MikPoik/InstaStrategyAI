@@ -18,9 +18,9 @@ def get_strategy_recommendations(profile_data: Dict, focus_area: str) -> List[st
     Generate 5 specific, actionable recommendations to improve the account's performance and reach.
     Provide the response as a JSON array of strings.
     """
-
+    print(prompt)
     response = send_openai_request(prompt)
-    
+    print(response)
     try:
         recommendations = json.loads(response)
         if isinstance(recommendations, list):

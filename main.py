@@ -69,6 +69,11 @@ if username and focus_area:
             profile_data['engagement_rate'])
         st.plotly_chart(engagement_chart)
 
+        st.subheader("Stategy Recommendations")
+        strategy_recommendations = get_strategy_recommendations(profile_data,focus_area)
+        with st.expander("Suggestions",expanded=True):
+            st.write("\n".join(strategy_recommendations))
+    
         st.header("Content Posting Plan")
         content_plan = generate_content_plan(profile_data, focus_area)
         st.table(pd.DataFrame(content_plan))
@@ -101,7 +106,7 @@ if username and focus_area:
                             )
                             if account.get('top_hashtags'):
                                 st.write(
-                                    f"Top Hashtags: {', '.join(account['top_hashtags'][:5])}"
+                                    f"Top Hashtags: {'\n'.join(account['top_hashtags'][:5])}"
                                 )
                         st.markdown("---")
         else:
