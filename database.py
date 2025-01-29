@@ -88,6 +88,8 @@ def cache_profile(profile_data):
             category=account_data.get('category', ''),
             followers=account_data.get('followers', 0),
             engagement_rate=account_data.get('engagement_rate', 0.0),
+            avg_likes=account_data.get('avg_likes', 0.0),
+            avg_comments=account_data.get('avg_comments', 0.0),
             top_hashtags=json.dumps(account_data.get('top_hashtags', [])),
             profile=profile
         )

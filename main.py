@@ -66,14 +66,15 @@ if username and focus_area:
 
         st.subheader("Engagement Rate")
         engagement_chart = create_engagement_chart(
-            profile_data['engagement_rate'])
+            profile_data['engagement_rate']
+        )
         st.plotly_chart(engagement_chart)
 
-        st.subheader("Stategy Recommendations")
-        strategy_recommendations = get_strategy_recommendations(profile_data,focus_area)
-        with st.expander("Suggestions",expanded=True):
+        st.subheader("Strategy Recommendations")
+        strategy_recommendations = get_strategy_recommendations(profile_data, focus_area)
+        with st.expander("Suggestions", expanded=True):
             st.write("\n".join(strategy_recommendations))
-    
+
         st.header("Content Posting Plan")
         content_plan = generate_content_plan(profile_data, focus_area)
         st.table(pd.DataFrame(content_plan))
@@ -94,19 +95,21 @@ if username and focus_area:
                         with col1:
                             st.subheader(account.get('username', 'N/A'))
                             st.write(
-                                f"Category: {account.get('category', 'N/A')}")
+                                f"Category: {account.get('category', 'N/A')}"
+                            )
                             st.write(
                                 f"Full Name: {account.get('full_name', 'N/A')}"
                             )
                         with col2:
                             st.write(
-                                f"Followers: {account.get('followers', 0):,}")
+                                f"Followers: {account.get('followers', 0):,}"
+                            )
                             st.write(
                                 f"Engagement Rate: {account.get('engagement_rate', 0):.2f}%"
                             )
                             if account.get('top_hashtags'):
                                 st.write(
-                                    f"Top Hashtags: {'\n'.join(account['top_hashtags'][:5])}"
+                                    "Top Hashtags: " + "\n".join(account['top_hashtags'][:5])
                                 )
                         st.markdown("---")
         else:

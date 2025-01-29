@@ -52,6 +52,8 @@ class SimilarAccount(db.Model):
     category = db.Column(db.String(255))
     followers = db.Column(db.Integer)
     engagement_rate = db.Column(db.Float)
+    avg_likes = db.Column(db.Float)
+    avg_comments = db.Column(db.Float)
     top_hashtags = db.Column(db.Text)  # Stored as JSON
     profile_id = db.Column(db.Integer, db.ForeignKey('instagram_profiles.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -65,6 +67,8 @@ class SimilarAccount(db.Model):
                 'category': self.category,
                 'followers': self.followers,
                 'engagement_rate': self.engagement_rate,
+                'avg_likes': self.avg_likes,
+                'avg_comments': self.avg_comments,
                 'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
                 'post_texts': [post.text_content for post in self.post_texts]
             }
@@ -76,6 +80,8 @@ class SimilarAccount(db.Model):
                 'category': self.category,
                 'followers': self.followers,
                 'engagement_rate': self.engagement_rate,
+                'avg_likes': 0,
+                'avg_comments': 0,
                 'top_hashtags': [],
                 'post_texts': []
             }
@@ -94,6 +100,8 @@ class InstagramProfile(db.Model):
     following = db.Column(db.Integer)
     posts_count = db.Column(db.Integer)
     engagement_rate = db.Column(db.Float)
+    avg_likes = db.Column(db.Float)
+    avg_comments = db.Column(db.Float)
     top_hashtags = db.Column(db.Text)  # Stored as JSON
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
     cache_valid_until = db.Column(db.DateTime)
@@ -111,6 +119,8 @@ class InstagramProfile(db.Model):
                 'following': self.following,
                 'posts': self.posts_count,
                 'engagement_rate': self.engagement_rate,
+                'avg_likes': self.avg_likes,
+                'avg_comments': self.avg_comments,
                 'top_hashtags': json.loads(self.top_hashtags) if self.top_hashtags else [],
                 'similar_accounts': similar_accounts_list,
                 'post_texts': [post.text_content for post in self.post_texts]
@@ -126,6 +136,8 @@ class InstagramProfile(db.Model):
                 'following': self.following,
                 'posts': self.posts_count,
                 'engagement_rate': self.engagement_rate,
+                'avg_likes': 0,
+                'avg_comments': 0,
                 'top_hashtags': [],
                 'similar_accounts': [],
                 'post_texts': []
@@ -142,6 +154,8 @@ class InstagramProfile(db.Model):
             following=data['following'],
             posts_count=data['posts'],
             engagement_rate=data['engagement_rate'],
+            avg_likes=data.get('avg_likes', 0),
+            avg_comments=data.get('avg_comments', 0),
             top_hashtags=json.dumps(data['top_hashtags']),
             cache_valid_until=datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
         )
