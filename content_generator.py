@@ -48,9 +48,8 @@ def generate_content_plan(profile_data: Dict, focus_area: str) -> List[Dict]:
     Use clear and direct language, avoid complex terminology. Aim for a Flesch reading score of 80 or higher. Use active language. Avoid adverbs. Avoid buzzwords and instead use simple language. Use professional jargon when necessary. Avoid a salesy or overly enthusiastic tone and instead convey calm confidence.
 
     Write an engaging and unique Instagram post on each topic. Analyze {profile_data['username']} writing style from samples and simulate the human writing style. Use a structure that is 50% creative and 50% persuasive, and emphasize important points in a Spartan manner.
+
     Important!! Remember to use low complexity and make the text human-like.
-    Tärkeää!! Muista käyttää alhaista monimutkaisuutta ja hämmennä teksi ihmismäiseksi.
-    Kirjoita Postauksien sisältö ja otsikko _SUOMEKSI_ käyttäen n. 200-250 sanaa.
 
     Provide the response in JSON format, with each post as a dictionary containing 'day', 'post_type', 'caption_theme','caption_text' and 'hashtags' keys.
     format example:
